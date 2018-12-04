@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="iOS签名机制密码的类型：根据密钥的使用方法，可以将密码分为2种  对称密码 公钥密码（非对称密码）在对称密码中，加密、解密时使用的是同一个密钥常见的对称密码算法有： DES DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit 规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit 由于DES每次只能加密64">
 <meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="iOS签名机制01">
 <meta property="og:url" content="http://yoursite.com/2018/12/03/iOS签名机制01/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="iOS签名机制密码的类型：根据密钥的使用方法，可以将密码分为2种  对称密码 公钥密码（非对称密码）在对称密码中，加密、解密时使用的是同一个密钥常见的对称密码算法有： DES DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit 规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit 由于DES每次只能加密64">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-03T07:52:17.859Z">
+<meta property="og:updated_time" content="2018-12-04T08:23:33.557Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS签名机制01">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="iOS签名机制密码的类型：根据密钥的使用方法，可以将密码分为2种  对称密码 公钥密码（非对称密码）在对称密码中，加密、解密时使用的是同一个密钥常见的对称密码算法有： DES DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit 规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit 由于DES每次只能加密64">
 
 
 
@@ -342,7 +342,34 @@
       
 
       
-        
+        <h4 id="iOS签名机制"><a href="#iOS签名机制" class="headerlink" title="iOS签名机制"></a>iOS签名机制</h4><p>密码的类型：<br>根据密钥的使用方法，可以将密码分为2种</p>
+<ul>
+<li>对称密码</li>
+<li>公钥密码（非对称密码）<br>在对称密码中，加密、解密时使用的是同一个密钥<br>常见的对称密码算法有：<ul>
+<li>DES<ul>
+<li>DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit</li>
+<li>规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit</li>
+<li>由于DES每次只能加密64bit的数据，遇到比较大的数据，需要对DES加密进行迭代（反复）</li>
+<li>目前已经可以在短时间内破解，所以不建议使用</li>
+</ul>
+</li>
+<li>3DES<ul>
+<li>将DES重复3次所得到的一种密码算法，也叫做3重DES</li>
+<li>目前还被一些银行等机构使用，但处理速度不高，安全性逐渐暴露出问题</li>
+</ul>
+</li>
+<li>AES<ul>
+<li>取代DES成为新标准的一种对称密码算法</li>
+<li>AES的密钥长度有128、192、256bit三种</li>
+<li>在2000年时选择Rijindael算法作为AES的实现</li>
+<li>目前AES，已经逐步取代DES、3DES，成为首选的对称密码算法</li>
+<li>一般来说，我们也不应该去使用任何自制的密码算法，而是使用AES，它经过了全世界密码学家所进行的高品质验证工作</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
       
     </div>
     
@@ -436,8 +463,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -515,6 +551,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#iOS签名机制"><span class="nav-number">1.</span> <span class="nav-text">iOS签名机制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
