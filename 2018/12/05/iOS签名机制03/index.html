@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="个人博客">
 <meta property="og:description" content="混合密码系统对称密码的缺点：不能很好的解决密钥配送问题 公钥密码的缺点：加密解密速度比较慢 混合密码系统，是将对称密码和公钥密码的优势相结合的方法;解决了公钥密码速度慢的问题;并通过公钥密码解决了对称密码的密钥配送问题. 网络上密码通信所用的SSL/TLS都运用了混合密码系统 混合密码——加密:  会话密钥 为本次通信随机生成的临时密钥 作为对称密码的密钥，用于加密消息，提高速度  加密步骤（发送">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-05T07:21:53.319Z">
+<meta property="og:updated_time" content="2018-12-06T02:26:02.663Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="iOS签名机制03">
 <meta name="twitter:description" content="混合密码系统对称密码的缺点：不能很好的解决密钥配送问题 公钥密码的缺点：加密解密速度比较慢 混合密码系统，是将对称密码和公钥密码的优势相结合的方法;解决了公钥密码速度慢的问题;并通过公钥密码解决了对称密码的密钥配送问题. 网络上密码通信所用的SSL/TLS都运用了混合密码系统 混合密码——加密:  会话密钥 为本次通信随机生成的临时密钥 作为对称密码的密钥，用于加密消息，提高速度  加密步骤（发送">
@@ -371,6 +371,11 @@
 <p>混合密码—加密解密流程</p>
 <p>Alice &gt;&gt;&gt; Bob<br>发送过程，加密过程:<br>1.Bob先生成一对公钥、私钥<br>2.Bob把公钥共享给Alice<br>3.Alice随机生成一个会话密钥（临时密钥）<br>4.Alice用会话密钥加密需要发送的消息（使用的是对称密码加密）<br>5.Alice用Bob的公钥加密会话密钥（使用的是公钥密码加密，也就是非对称加密）<br>6.Alice把第4、5步加密的结果，一并发送给Bob</p>
 <p>接收过程，解密过程:<br> 1.Bob利用自己的私钥解密会话密钥（使用的是公钥密码解密，也就是非对称密码解密）<br> 2.Bob利用会话密钥解密发送过来的会话（使用的是对称密码解密）</p>
+<ul>
+<li>SHA-1，产生168bit的散列值，目前已经不安全</li>
+<li>SHA-256、SHA-384、SHA-512，散列值长度分别是256、384、512</li>
+<li>SHA-3全新标准<br>在公钥密码中，任何人都可以使用公钥进行加密<br>在数字签名中，任何人都可以使用公钥验证签名</li>
+</ul>
 
       
     </div>
@@ -410,6 +415,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/06/心灵鸡汤02/" rel="prev" title="心灵鸡汤02">
+                心灵鸡汤02 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -488,7 +497,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">15</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
