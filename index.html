@@ -252,6 +252,320 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/2-OC对象的分类/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/2-OC对象的分类/" itemprop="url">2.OC对象的分类</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T14:22:57+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/1-一个NSObject对象占用多少内存/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/1-一个NSObject对象占用多少内存/" itemprop="url">1.一个NSObject对象占用多少内存</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T09:32:47+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>我们平时所编写的Object-C代码，底层实现都是C/C++代码，</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Object-C代码底层实现.png" title="Object-C代码底层实现">
+<p> 所有OC的面向对象都是基于C/C++的数据结构实现的<br> <code>思考:OC对象主要是基于C/C++的什么数据结构实现的呢？？？</code></p>
+<p> 想要了解OC对象主要是基于C/C++的什么数据结构实现的，我们首先要做的就是将Object-C代码转化为C/C++代码，这样我们才能清楚的看清是怎么实现的</p>
+<p> 然后我们打开终端，命令行cd到文件目录，然后输入：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -rewrite-objc main.m</span><br></pre></td></tr></table></figure></p>
+<p> 命令可以将main.m编译成C++的代码，改成不同的文件名，就会生成不同的c++代码<br> 这时就生成了main.cpp这个c++文件，打开文件代码查看main.cpp最底下的main函数</p>
+<p> 但是不同平台支持的代码肯定是不一样的，像平台有Windows、mac、iOS<br>，架构有模拟器（i386）、32bit（armv7）、64bit（arm64），我们使用iOS，它的架构现在基本上都是64bit（arm64）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc OC源文件  -o  输出的CPP文件</span><br><span class="line">如果需要链接其他框架，使用-framework参数。比如-framework UIKit</span><br></pre></td></tr></table></figure>
+<p>在终端输入命令以后，我们会生成一个main.cpp文件，打开main.cpp文件，我们把main.cpp拉到最下面，会看到这样一段代码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     </span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这一段代码就是我们OC代码中的main函数的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>这时我们在main函数写入这一段代码，然后点进去，查看代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSObject *obj = [[NSObject alloc]init];</span><br></pre></td></tr></table></figure></p>
+<p>点击NSObject进入内部，可以看到NSObject底层实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 我们用NSObject_IMPL查找在c++文件中具体的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 我们再一次执行命令<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc mian.m</span><br></pre></td></tr></table></figure></p>
+<p> 生成的C++代码为<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     NSObject *obj = ((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)objc_getClass(&quot;NSObject&quot;), sel_registerName(&quot;alloc&quot;)), sel_registerName(&quot;init&quot;));</span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有两个方法可以打印内存大小<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;objc/runtime.h&gt;</span><br><span class="line">#import &lt;malloc/malloc.h&gt;</span><br><span class="line">//获取NSObject实例对象的成员变量所占用的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,class_getInstanceSize([NSObject class]));</span><br><span class="line"> </span><br><span class="line">//获得obj指针所指向内存的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,malloc((__bridge const void*)obj)));</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存.png" title="NSObject对象内存"></p>
+<h3 id="一个OC对象在内存中是怎样布局的呢"><a href="#一个OC对象在内存中是怎样布局的呢" class="headerlink" title="一个OC对象在内存中是怎样布局的呢"></a>一个OC对象在内存中是怎样布局的呢</h3><p>我们在c++文件中找到NSObject的实现<br>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>c++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们知道一个指针式8个字节，但是NSObject对象打印16个字节，他们是怎么布局的呢</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存地址.png" title="NSObject对象内存地址">
+<p>我们可以根据内存地址实时查看内存分配情况Debug -&gt; Debug Workfllow -&gt; View Memory （Shift + Command + M）</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据.png" title="查看内存数据">
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据1.png" title="查看内存数据1">
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据2.png" title="查看内存数据2">
+<p>我们也可以直接使用<code>LLDB命令</code>来查看内存地址<br><strong>常用LLDB命令</strong></p>
+<ul>
+<li>print、p：打印</li>
+<li>po:打印对象</li>
+<li>读取内存<ul>
+<li>memory read/数量格式字节数 内存地址</li>
+<li>x/（格式：x是16进制，f是浮点，d是10进制；字节大小：byte 1字节，h：half word 2字节，w：word 4字节，g：giant word 8字节）</li>
+</ul>
+</li>
+<li>修改内存中的值（memory write 内存地址 数值memory write 0x0000010 10）</li>
+</ul>
+<p><strong>问题1</strong>：假设我创建一个<code>Student</code>类，里面有<code>age</code>，<code>number</code>两个属性，那么它的内存是多大呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu-&gt;_number = 4;</span><br><span class="line">stu-&gt;_age = 5;</span><br></pre></td></tr></table></figure></p>
+<p>我们先执行命令，查看一下c++源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们在知道结果之前大概猜猜内存是多大呢？16、24、32…</p>
+<p>答案是16个字节。</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印.png" title="Student内存打印">
+<p>我们用<code>LLDB命令</code>打印一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a9 11 00 00 01 80 1d 00 04 00 00 00 05 00 00 00</span><br></pre></td></tr></table></figure></p>
+<p> 为什么会是<code>04 00 00 00</code>和<code>05 00 00 00</code>呢，而不是<code>00 00 00 04</code>和<code>00 00 00 o5</code>,这个就要考虑<a href="https://baike.baidu.com/item/大小端模式/6750542?fromtitle=大端小端&amp;fromid=15925891&amp;fr=aladdin" target="_blank" rel="noopener">大端小端</a></p>
+<p>但是为什么会是16个字节呢？因为int类型占用4个字节，两个int类型8个字节，一个isa占8个字节，因为刚刚占满16个字节，对象就没在开辟新的空间</p>
+<p>如果多一个height会占用几个字节呢？</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印2">
+<p>答案是占用32个字节。</p>
+<p>其实这又要提到一个新的知识点了<code>内存对齐</code>,我们知道OC对象就是C++结构体，<code>而结构体的大小必须是最大成员大小的倍数</code>，当在多了一个<code>height</code>以后，内存不够用了，然后就需要扩展了。</p>
+<p><strong>如果是这样呢，占用内存是多少</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject&#123;</span><br><span class="line">@public</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Person</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Student : Person&#123;</span><br><span class="line">@public</span><br><span class="line">int _height;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Student</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p><code>Student</code>继承自<code>Person</code></p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印">
+<p>我们生成C++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct Person_IMPL Person_IVARS;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct Person_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>整理一下就是这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/11/缘分/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1486,320 +1800,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/iOS签名机制01/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/iOS签名机制01/" itemprop="url">iOS签名机制01</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T11:39:47+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h4 id="iOS签名机制"><a href="#iOS签名机制" class="headerlink" title="iOS签名机制"></a>iOS签名机制</h4><p>密码的类型：<br>根据密钥的使用方法，可以将密码分为2种</p>
-<ul>
-<li>对称密码</li>
-<li>公钥密码（非对称密码）<br>在对称密码中，加密、解密时使用的是同一个密钥<br>常见的对称密码算法有：<ul>
-<li>DES<ul>
-<li>DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit</li>
-<li>规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit</li>
-<li>由于DES每次只能加密64bit的数据，遇到比较大的数据，需要对DES加密进行迭代（反复）</li>
-<li>目前已经可以在短时间内破解，所以不建议使用</li>
-</ul>
-</li>
-<li>3DES<ul>
-<li>将DES重复3次所得到的一种密码算法，也叫做3重DES</li>
-<li>目前还被一些银行等机构使用，但处理速度不高，安全性逐渐暴露出问题</li>
-</ul>
-</li>
-<li>AES<ul>
-<li>取代DES成为新标准的一种对称密码算法</li>
-<li>AES的密钥长度有128、192、256bit三种</li>
-<li>在2000年时选择Rijindael算法作为AES的实现</li>
-<li>目前AES，已经逐步取代DES、3DES，成为首选的对称密码算法</li>
-<li>一般来说，我们也不应该去使用任何自制的密码算法，而是使用AES，它经过了全世界密码学家所进行的高品质验证工作</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/08/音视频入门学习笔记-6-视频编码与视频格式的区别和联系/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/08/音视频入门学习笔记-6-视频编码与视频格式的区别和联系/" itemprop="url">音视频入门学习笔记(6)视频编码与视频格式的区别和联系</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T14:44:49+08:00">
-                2018-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/音视频/" itemprop="url" rel="index">
-                    <span itemprop="name">音视频</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>视频编码是一种压缩技术，就是把原始的视频流压缩成特定的比特流（视编码方案）。视频格式是一种封装格式，就是把编码后的比特流进行封装，不同的视频格式封装方法不同。打个比方，原始的模拟视频采用MPEG2数字化编码后，你可以采用TS流格式封装成TS流文件，也可以采用PS流格式封装成PS流文件，选择权在于你，TS流是称为实时流，他把视频信息分成很多很小的包，损坏了一个包，你解码回放时只是看不见一小部分（例如出现马赛克），但是PS流是文件流，文件损害的话，整个文件都看不了了。再形象的说，一段视频资源用TS流封装就是把这段视频切成10个部分，放到10个盒子里，一个盒子一个盒子的按照顺序打开，你就能看完这段视频；而PS流式把整个视频放到1个盒子里，它会自动按照顺序播放出来给您观看；如果有一个盒子坏了，TS流可以看到9个盒子，PS你就都看不见了。</p>
-<p>其实如何对应都是各个厂家用来控制市场的一种方式而已，有编就有解，我编的，你必须用我的方式来解，不然你就看不了我的图像了，当然某些程度上这些私有标准也是具有技术含量的，他们能在一定程度上提高视频编码的效率或者提高画质等。<br>国际上标准的视频编码格式目前只有MPEG2/MPEG4/H.264/MJPEG这几种，所以其他的编码格式都是各个厂家的私有编码（例如微软的DIVX、real公司的RM系列等）<br>对应可以如下<br>（封装格式：编码格式）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AVI：MPEG-2，DIVX，XVID，AC-1，H.264;</span><br><span class="line">WMV：WMV，AC-1;</span><br><span class="line">RM、RMVB：RV， RM;</span><br><span class="line">MOV：MPEG-2，XVID，H.264;</span><br><span class="line">TS/PS：MPEG-2，H.264，MPEG-4;</span><br><span class="line">MKV：可以封装所有的视频编码格式。</span><br></pre></td></tr></table></figure></p>
-<p>常见的高清视频编码和封装格式<br>回答：<br>高清编码基本采用AC-1、MPEG2、H.264<br>目前高清对应于封装如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AVI：AC-1、MPEG2、H.264</span><br><span class="line">TS/PS：MPEG-2，H.264;</span><br><span class="line">MKV：AC-1、MPEG2、H.264</span><br></pre></td></tr></table></figure></p>
-<p>高清的和普清的一样，没啥大的区别，如果REAL公司要做高清的编码一样可以做出来，只不过它的市场不在那一块而已 。</p>
-<p>来源：CSDN<br>原文：<a href="https://blog.csdn.net/oney139/article/details/6273525" target="_blank" rel="noopener">https://blog.csdn.net/oney139/article/details/6273525</a> </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1852,7 +1852,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1863,7 +1863,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
