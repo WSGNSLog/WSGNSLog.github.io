@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="KVO（key value observing）键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化 KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以KVO的本质就是监听对象有没有调用被监听属性对应的setter方法 在学习实现原理之前先了解一下KVO常用的方法 12345678910111213141">
+<meta name="keywords" content="iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="3.KVO">
+<meta property="og:url" content="http://yoursite.com/2018/12/20/3-KVO/index.html">
+<meta property="og:site_name" content="个人博客">
+<meta property="og:description" content="KVO（key value observing）键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化 KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以KVO的本质就是监听对象有没有调用被监听属性对应的setter方法 在学习实现原理之前先了解一下KVO常用的方法 12345678910111213141">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO1.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO5.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO3.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO4.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO6.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO7.png">
+<meta property="og:updated_time" content="2018-12-20T08:04:11.527Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="3.KVO">
+<meta name="twitter:description" content="KVO（key value observing）键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化 KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以KVO的本质就是监听对象有没有调用被监听属性对应的setter方法 在学习实现原理之前先了解一下KVO常用的方法 12345678910111213141">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/20/3-KVO/KVO1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'NSLegend'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/12/20/3-KVO/">
+
+
+
+
+
+  <title>3.KVO | 个人博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Stay Hungry,Stay Foolish.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/3-KVO/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">3.KVO</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T15:25:59+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>KVO（key value observing）</code>键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化</p>
+<p>KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code></p>
+<p>在学习实现原理之前先了解一下KVO常用的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">注册监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者在回调函数中会被回传</span><br><span class="line">监听的属性路径为keyPath支持点语法的嵌套</span><br><span class="line">监听类型为options支持按位或来监听多个事件类型</span><br><span class="line">监听上下文context主要用于在多个监听器对象监听相同keyPath时进行区分</span><br><span class="line">添加监听器只会保留监听器对象的地址，不会增加引用，也不会在对象释放后置空，因此需要自己持有监听对象的强引用，该参数也会在回调函数中回传</span><br><span class="line">*/</span><br><span class="line">- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">删除监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者，应与addObserver方法匹配</span><br><span class="line">监听的属性路径为keyPath，应与addObserver方法的keyPath匹配</span><br><span class="line">监听上下文context，应与addObserver方法的context匹配</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context API_AVAILABLE(macos(10.7), ios(5.0), watchos(2.0), tvos(9.0));</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">与上一个方法相同，只是少了context参数</span><br><span class="line">推荐使用上一个方法，该方法由于没有传递context可能会产生异常结果</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">监听器对象的监听回调方法</span><br><span class="line">keyPath即为监听的属性路径</span><br><span class="line">object为被监听的对象</span><br><span class="line">change保存被监听的值产生的变化</span><br><span class="line">context为监听上下文，由add方法回传</span><br><span class="line">*/</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context;</span><br></pre></td></tr></table></figure>
+<h3 id="KVO简单实现"><a href="#KVO简单实现" class="headerlink" title="KVO简单实现"></a>KVO简单实现</h3><p>我们创建一个<code>person</code>对象，然后在里面添加一个<code>age</code>属性，我们就来观察一下<code>age</code>属性<br><strong>person对象</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic,assign) NSInteger age;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p><strong>简单实现</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;ViewController.h&quot;</span><br><span class="line">#import &quot;Person.h&quot;</span><br><span class="line">@interface ViewController ()</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Person *p1;</span><br><span class="line">@property (nonatomic,strong) Person *p2;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation ViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line"></span><br><span class="line">self.p1 = [[Person alloc]init];</span><br><span class="line">self.p2 = [[Person alloc]init];</span><br><span class="line">self.p1.age = 10;</span><br><span class="line">self.p2.age = 20;</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">self.p1.age = arc4random()%100;</span><br><span class="line">self.p2.age = arc4random()%100;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">[self.p1 removeObserver:self forKeyPath:@&quot;age&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">// 当监听对象的属性值发生改变时，就会调用</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;监听到%@的%@属性值改变了 - %@ - %@&quot;, object, keyPath, change, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上代码就是一个<code>KVO</code>的简单实现，但是我们有没有想过他的内部到底是怎样实现的呢，今天我们就来探究一下<code>KVO</code>的内部实现原理</p>
+<h3 id="KVO的内部实现"><a href="#KVO的内部实现" class="headerlink" title="KVO的内部实现"></a>KVO的内部实现</h3><p>探究一个对象底层实现最简单的办法就行打印一些对象信息，看看有什么改变</p>
+<p>我们在给<code>person1</code>添加监听之前分别打印<code>p1,p2</code>的类信息<br>代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO1.png" title="KVO1"></p>
+<p>我们根据结果看到，在添加KVO观察者之后<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，虽然<code>p1</code>的类对象变成了<code>NSKVONotifying_Person</code>，但是我们在调用的时候感觉我们的<code>p1</code>的类对象还是<code>Person</code>，所以，我们可以猜测<code>KVO</code>会在运行时动态创建一个新类，将对象的<code>isa</code>指向新创建的类，<code>新类是原类的子类</code>，命名规则是<code>NSKVONotifying_xxx</code>的格式。KVO为了使其更像之前的类，还会将对象的<code>class实例方法重写</code>，使其更像原类</p>
+<p> <strong>查看P1内部方法是否改变</strong></p>
+<p>我们在发现<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，那我们也随便打印一下<code>Person</code>和<code>NSKVONotifying_Person</code>内部方法都变成了什么</p>
+<p>打印一下方法名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (void)printMethodNamesOfClass:(Class)cls</span><br><span class="line">&#123;</span><br><span class="line">unsigned int count;</span><br><span class="line">// 获得方法数组</span><br><span class="line">Method *methodList = class_copyMethodList(cls, &amp;count);</span><br><span class="line"></span><br><span class="line">// 存储方法名</span><br><span class="line">NSMutableString *methodNames = [NSMutableString string];</span><br><span class="line"></span><br><span class="line">// 遍历所有的方法</span><br><span class="line">for (int i = 0; i &lt; count; i++) &#123;</span><br><span class="line">// 获得方法</span><br><span class="line">Method method = methodList[i];</span><br><span class="line">// 获得方法名</span><br><span class="line">NSString *methodName = NSStringFromSelector(method_getName(method));</span><br><span class="line">// 拼接方法名</span><br><span class="line">[methodNames appendString:methodName];</span><br><span class="line">[methodNames appendString:@&quot;, &quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 释放</span><br><span class="line">free(methodList);</span><br><span class="line"></span><br><span class="line">// 打印方法名</span><br><span class="line">NSLog(@&quot;%@ %@&quot;, cls, methodNames);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们分别在KVO监听前后在分别打印一下<code>p1</code>的类对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO2.png" title="KVO2"></p>
+<p>我们在来打印一些KVO监听前后<code>setAge</code>方法发生了什么改变，因为值得改变肯定是因为<code>set</code>方法导致的，所以我们打印一下<code>setAge</code>方法。<code>methodForSelector</code>可以打印方法地址，我们分别在KVO监听前后打印</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br></pre></td></tr></table></figure>
+<p>打印结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2018-09-04 10:41:05.823343+0800 KVO[21971:1023542] person1添加KVO监听之前 - 0x103f18540 0x103f18540</span><br><span class="line">2018-09-04 10:41:05.823702+0800 KVO[21971:1023542] person1添加KVO监听之后 - 0x10425ebf4 0x103f18540</span><br></pre></td></tr></table></figure></p>
+<p>我们可以利用lldb分别看一下具体的方法实现：</p>
+<img src="/2018/12/20/3-KVO/KVO5.png" title="KVO5">
+<p>根据以上总结，我们大概猜到在使用KVO前后对象的改变了<br><strong>未使用KVO监听的对象</strong></p>
+<img src="/2018/12/20/3-KVO/KVO3.png" title="KVO3">
+<p><strong>使用KVO监听的对象</strong><br><img src="/2018/12/20/3-KVO/KVO4.png" title="KVO4"></p>
+<ul>
+<li>1、重写class方法是为了我们调用它的时候返回跟重写继承类之前同样的内容。KVO底层交换了 NSKVONotifying_Person 的 class 方法，让其返回 Person</li>
+<li>2、重写setter方法:在新的类中会重写对应的set方法，是为了在set方法中增加另外两个方法的调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (void)willChangeValueForKey:(NSString *)key</span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在didChangeValueForKey:方法再调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath</span><br><span class="line">ofObject:(id)object</span><br><span class="line">change:(NSDictionary *)change</span><br><span class="line">context:(void *)context</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>3、重写dealloc方法，销毁新生成的NSKVONotifying_类。</li>
+<li>4、重写_isKVOA方法，这个私有方法估计可能是用来标示该类是一个 KVO 机制声称的类。</li>
+</ul>
+<h3 id="NSSetLongLongValueAndNotify"><a href="#NSSetLongLongValueAndNotify" class="headerlink" title="_NSSetLongLongValueAndNotify"></a>_NSSetLongLongValueAndNotify</h3><p>在添加KVO监听方法以后<code>setAge</code>方法变成了<code>_NSSetLongLongValueAndNotify</code>,所以我们可以大概猜测动态监听方法主要就是在这里面实现的</p>
+<p>我们可以在终端使用<code>nm -a /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation | grep ValueAndNotify</code>命令来查看<code>NSSet*ValueAndNotify</code>的类型<br><img src="/2018/12/20/3-KVO/KVO6.png" title="KVO6"></p>
+<p>我们可以在<code>Person</code>类中重写<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>,来猜测一下<code>_NSSetLongLongValueAndNotify</code>的内部实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (void)setAge:(NSInteger)age&#123;</span><br><span class="line">_age = age;</span><br><span class="line">NSLog(@&quot;调用set方法&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (void)willChangeValueForKey:(NSString *)key&#123;</span><br><span class="line">[super willChangeValueForKey:key];</span><br><span class="line">NSLog(@&quot;willChangeValueForKey&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - begin&quot;);</span><br><span class="line"></span><br><span class="line">[super didChangeValueForKey:key];</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - end&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2018/12/20/3-KVO/KVO7.png" title="KVO7">
+<p>根据打印结果我们可以推断<code>_NSSetLongLongValueAndNotify</code>内部实现为</p>
+<ul>
+<li>1、调用<code>willChangeValueForKey</code>方法</li>
+<li>2、调用<code>setAge</code>方法</li>
+<li>3、调用’didChangeValueForKey’方法</li>
+<li>4、’didChangeValueForKey’方法内部调用<code>oberser</code>的<code>observeValueForKeyPath:ofObject:change:context:</code>方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 伪代码</span><br><span class="line">void _NSSetIntValueAndNotify()</span><br><span class="line">&#123;</span><br><span class="line">[self willChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">[super setAge:age];</span><br><span class="line">[self didChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br><span class="line">&#123;</span><br><span class="line">// 通知监听器，某某属性值发生了改变</span><br><span class="line">[oberser observeValueForKeyPath:key ofObject:self change:nil context:nil];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="面试题"><a href="#面试题" class="headerlink" title="面试题"></a>面试题</h3><p><strong>1、iOS用什么方式实现对一个对象的KVO（KVO的本质是什么？）</strong></p>
+<ul>
+<li>1、利用RuntimeAPI动态生成一个子类<code>NSKVONotifying_XXX</code>,并且让instance对象的isa指向这个全新的子类<code>NSKVONotifying_XXX</code></li>
+<li>2、当修改对象的属性时，会在子类<code>NSKVONotifying_XXX</code>调用Foundation的<code>_NSSetXXXValueAndNotify</code>函数</li>
+<li>3、在<code>_NSSetXXXValueAndNotify</code>函数中一次调用<ul>
+<li>1、willChangeValueForKey</li>
+<li>2、父类原来的setter</li>
+<li>3、didChangeValueForKey，didChangeValueForKey：内部会出发监听器（Observer）的监听方法( observeValueForKeyPath:ofObject:change:context:）</li>
+</ul>
+</li>
+</ul>
+<p><strong>2、如何手动触发KVO方法</strong><br>手动调用<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>方法</p>
+<p>键值观察通知依赖于 NSObject 的两个方法: <code>willChangeValueForKey:</code> 和 <code>didChangeValueForKey</code>。在一个被观察属性发生改变之前， <code>willChangeValueForKey:</code> 一定会被调用，这就<br>会记录旧的值。而当改变发生后， <code>didChangeValueForKey</code> 会被调用，继而 <code>observeValueForKey:ofObject:change:context:</code>也会被调用。如果可以手动实现这些调用，就可以实现“手动触发”了</p>
+<p>有人可能会问只调用<code>didChangeValueForKey</code>方法可以触发KVO方法，其实是不能的，因为<code>willChangeValueForKey:</code> 记录旧的值，如果不记录旧的值，那就没有改变一说了</p>
+<p><strong>3、直接修改成员变量会触发KVO吗</strong><br>不会触发KVO，因为<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code>，直接修改成员变量，是在内存中修改的，不走<code>set</code>方法</p>
+<p><strong>4、不移除KVO监听，会发生什么</strong></p>
+<ul>
+<li>不移除会造成内存泄漏</li>
+<li>但是多次重复移除会崩溃。系统为了实现KVO，为NSObject添加了一个名为NSKeyValueObserverRegistration的Category，KVO的add和remove的实现都在里面。在移除的时候，系统会判断当前KVO的key是否已经被移除，如果已经被移除，则主动抛出一个NSException的异常</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/20/2-OC对象的分类/" rel="next" title="2.OC对象的分类">
+                <i class="fa fa-chevron-left"></i> 2.OC对象的分类
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/20/4-KVC/" rel="prev" title="4.KVC">
+                4.KVC <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/headIcon.png" alt="NSLegend">
+            
+              <p class="site-author-name" itemprop="name">NSLegend</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry,Stay Foolish.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/WSGNSLog" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.jianshu.com/u/ba5f297de9bc" target="_blank" title="简书">
+                      
+                        <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO简单实现"><span class="nav-number">1.</span> <span class="nav-text">KVO简单实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KVO的内部实现"><span class="nav-number">2.</span> <span class="nav-text">KVO的内部实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NSSetLongLongValueAndNotify"><span class="nav-number">3.</span> <span class="nav-text">_NSSetLongLongValueAndNotify</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#面试题"><span class="nav-number">4.</span> <span class="nav-text">面试题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NSLegend</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

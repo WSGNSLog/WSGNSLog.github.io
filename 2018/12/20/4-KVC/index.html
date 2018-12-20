@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。 1、KVC中常见方法我们随便点击进入setValue:forKey方法，我们可以发现里面的方法基本上都是基于NSObject的NSKeyValueCoding分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Obje">
+<meta name="keywords" content="iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4.KVC">
+<meta property="og:url" content="http://yoursite.com/2018/12/20/4-KVC/index.html">
+<meta property="og:site_name" content="个人博客">
+<meta property="og:description" content="KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。 1、KVC中常见方法我们随便点击进入setValue:forKey方法，我们可以发现里面的方法基本上都是基于NSObject的NSKeyValueCoding分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Obje">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC1.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC3.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC4.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC5.png">
+<meta property="og:updated_time" content="2018-12-20T08:17:43.489Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="4.KVC">
+<meta name="twitter:description" content="KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。 1、KVC中常见方法我们随便点击进入setValue:forKey方法，我们可以发现里面的方法基本上都是基于NSObject的NSKeyValueCoding分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Obje">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/20/4-KVC/KVC1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'NSLegend'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/12/20/4-KVC/">
+
+
+
+
+
+  <title>4.KVC | 个人博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Stay Hungry,Stay Foolish.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/4-KVC/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">4.KVC</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T16:00:13+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。</p>
+<h3 id="1、KVC中常见方法"><a href="#1、KVC中常见方法" class="headerlink" title="1、KVC中常见方法"></a>1、KVC中常见方法</h3><p>我们随便点击进入<code>setValue:forKey</code>方法，我们可以发现里面的方法基本上都是基于<code>NSObject</code>的<code>NSKeyValueCoding</code>分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Objective-C对象都能使用KVC(一些纯Swift类和结构体是不支持KVC的)，下面是KVC最为重要的四个方法<br><img src="/2018/12/20/4-KVC/KVC1.png" title="KVC1"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForKey:(NSString *)key;                          //直接通过Key来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKey:(NSString *)key;          //通过Key来设值</span><br><span class="line">- (nullable id)valueForKeyPath:(NSString *)keyPath;                  //通过KeyPath来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKeyPath:(NSString *)keyPath;  //通过KeyPath来设值</span><br></pre></td></tr></table></figure></p>
+<p><code>NSKeyValueCoding</code>类别中还有其他的一些方法，这些方法在碰到特殊情况或者有特殊需求还是会用到的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)accessInstanceVariablesDirectly;</span><br><span class="line">//默认返回YES，表示如果没有找到Set&lt;Key&gt;方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员，设置成NO就不这样搜索</span><br><span class="line"></span><br><span class="line">- (BOOL)validateValue:(inout id __nullable * __nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">//KVC提供属性值正确性�验证的API，它可以用来检查set的值是否正确、为不正确的值做一个替换值或者拒绝设置新值并返回错误原因。</span><br><span class="line"></span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">//这是集合操作的API，里面还有一系列这样的API，如果属性是一个NSMutableArray，那么可以用这个方法来返回。</span><br><span class="line"></span><br><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">//如果Key不存在，且没有KVC无法搜索到任何和Key有关的字段或者属性，则会调用这个方法，默认是抛出异常。</span><br><span class="line"></span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">//和上一个方法一样，但这个方法是设值。</span><br><span class="line"></span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br><span class="line">//如果你在SetValue方法时面给Value传nil，则会调用这个方法</span><br><span class="line"></span><br><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">//输入一组key,返回该组key对应的Value，再转成字典返回，用于将Model转到字典。</span><br></pre></td></tr></table></figure></p>
+<h3 id="2、KVC的内部实现机制"><a href="#2、KVC的内部实现机制" class="headerlink" title="2、KVC的内部实现机制"></a>2、KVC的内部实现机制</h3><h4 id="KVO的setValue-forKey原理"><a href="#KVO的setValue-forKey原理" class="headerlink" title="KVO的setValue:forKey原理"></a>KVO的<code>setValue:forKey</code>原理</h4><p>我们先来一张图片可以直接明了的看清楚实现原理<br><img src="/2018/12/20/4-KVC/KVC2.png" title="KVC2"></p>
+<ul>
+<li>1、按照<code>setKey</code>，<code>_setKey</code>的顺序查找<code>成员方法</code>，如果找到方法，传递参数，调用方法</li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值（<code>accessInstanceVariablesDirectly</code>的返回值默认是<code>YES</code>），<ul>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接赋值，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+</li>
+</ul>
+<h4 id="KVO的ValueforKey原理"><a href="#KVO的ValueforKey原理" class="headerlink" title="KVO的ValueforKey原理"></a>KVO的<code>ValueforKey</code>原理</h4><img src="/2018/12/20/4-KVC/KVC3.png" title="KVC3">
+<ul>
+<li>1、按照<code>getKey,key,isKey,_key</code>的顺序查找<code>成员方法</code>，如果找到直接调用<code>取值</code></li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值</li>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接<code>取值</code>，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+<h3 id="3、KVC的使用"><a href="#3、KVC的使用" class="headerlink" title="3、KVC的使用"></a>3、KVC的使用</h3><h4 id="KVC基础使用"><a href="#KVC基础使用" class="headerlink" title="KVC基础使用"></a>KVC基础使用</h4><p>假设我们有一个<code>Person</code>类，里面有一个<code>age</code>属性，我们给<code>age</code>赋值和取值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;age&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;age&quot;]</span><br></pre></td></tr></table></figure>
+<p>这也是最简单的使用方法了，也是我们平时项目中最常使用的方法了</p>
+<h4 id="KVC中使用keyPath"><a href="#KVC中使用keyPath" class="headerlink" title="KVC中使用keyPath"></a>KVC中使用keyPath</h4><p>但是当<code>Person</code>类里面有一个<code>student</code>类，里面有一个<code>height</code>属性，我们怎么赋值<code>height</code>属性呢，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Student *stu;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们能否这样写呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;stu.height&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;stu.height&quot;]</span><br></pre></td></tr></table></figure></p>
+<p>我们运行程序打印结果<br><img src="/2018/12/20/4-KVC/KVC4.png" title="KVC4"></p>
+<p>打印结果是<code>this class is not key value coding-compliant for the key stu.height.</code>,所以这个方法是不可以的，但是iOS为我们提供了另一个方法<code>KeyPath</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">p.stu = [[Student alloc]init];</span><br><span class="line">[p setValue:@180 forKeyPath:@&quot;stu.height&quot;];</span><br><span class="line">NSLog(@&quot;valueForKey:%@&quot;,[p valueForKeyPath:@&quot;stu.height&quot;]);</span><br><span class="line">NSLog(@&quot;stu.height:%f&quot;,p.stu.height);</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/4-KVC/KVC5.png" title="KVC5"></p>
+<p><code>keyPath</code>除了对当前对象的属性进行赋值外，还可以对其更“深层”的对象进行赋值。KVC进行多级访问时，直接类似于属性调用一样用点语法进行访问即可。</p>
+<h4 id="KVC之集合属性"><a href="#KVC之集合属性" class="headerlink" title="KVC之集合属性"></a>KVC之集合属性</h4><p>如果我们想要修改集合类型，我们该怎么办呢，不要着急，系统还是很友好的给我们提供了一些方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableSet *)mutableSetValueForKey:(NSString *)key</span><br><span class="line">- (NSMutableSet *)mutableSetValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKey:(NSString *)key </span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKeyPath:(NSString *)keyPath</span><br></pre></td></tr></table></figure></p>
+<p>简单使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">[[p mutableArrayValueForKey:@&quot;list&quot;] addObject:@&quot;test&quot;];</span><br><span class="line">NSLog(@&quot;mutableArrayValueForKey:%@&quot;,[p valueForKeyPath:@&quot;list&quot;]);</span><br><span class="line">NSLog(@&quot;%@&quot;,p.list);</span><br></pre></td></tr></table></figure></p>
+<p>关于<code>mutableArrayValueForKey:</code>的适用场景，网上一般说是在<code>KVO</code>中，因为<code>KVO的本质是系统监测到某个属性的内存地址或常量改变</code>时会添加上<code>- (void)willChangeValueForKey:(NSString *)key</code>和<code>- (void)didChangeValueForKey:(NSString *)key</code>方法来发送通知，但是如果直接改数组的话，内存地址并没有改变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">_p = [[Person alloc]init];</span><br><span class="line">[_p addObserver:self forKeyPath:@&quot;list&quot; options:options context:nil];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">//    [_p.list addObject:@(arc4random()%255)];</span><br><span class="line">//    NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">//    NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</span><br><span class="line">NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSString *,id&gt; *)change context:(void *)context&#123;</span><br><span class="line">NSLog(@&quot;%@&quot;,change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)dealloc&#123;</span><br><span class="line">[_p removeObserver:self forKeyPath:@&quot;list&quot;]; //一定要在dealloc里面移除观察</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们分别用<code>[_p.list addObject:@(arc4random()%255)];</code>和<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>两个方法修改<code>list</code>内容，我们打印可知<code>[_p.list addObject:@(arc4random()%255)];</code>方法并没有改变<code>list</code>的内存地址，而使用<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>  ， <code>list</code>的内存地址改变了。</p>
+<h4 id="KVC之字典属性"><a href="#KVC之字典属性" class="headerlink" title="KVC之字典属性"></a>KVC之字典属性</h4><p>KVC里面还有两个关于NSDictionary的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">- (void)setValuesForKeysWithDictionary:(NSDictionary&lt;NSString *, id&gt; *)keyedValues;</span><br></pre></td></tr></table></figure></p>
+<p><code>dictionaryWithValuesForKeys:</code>是指输入一组key，返回这组key对应的属性，再组成一个字典<br><code>setValuesForKeysWithDictionary</code>是用来修改dic中对应key的属性</p>
+<p>这个属性最常用到的地方就是字典转模型<br>例如我们有一个<code>Student</code>类，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface Student : NSObject</span><br><span class="line">@property (nonatomic,assign) float height;</span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line">@property (nonatomic,strong) NSString *name;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们正常是怎么赋值呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu.age = 10;</span><br><span class="line">stu.name = @&quot;jack&quot;;</span><br><span class="line">stu.height = 180;</span><br></pre></td></tr></table></figure></p>
+<p>如果里面有100个属性呢，我们就需要写100遍<br>如果使用<code>setValuesForKeysWithDictionary</code>方法呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">//在进行网络请求的时候dic不需要我们手写，是后台返回的</span><br><span class="line">NSDictionary *dic = @&#123;@&quot;name&quot;:@&quot;jack&quot;,@&quot;height&quot;:@180,@&quot;age&quot;:@10&#125;;</span><br><span class="line">[stu setValuesForKeysWithDictionary:dic];</span><br></pre></td></tr></table></figure></p>
+<p>这样是不是简单了好多。</p>
+<h3 id="4、KVC异常处理"><a href="#4、KVC异常处理" class="headerlink" title="4、KVC异常处理"></a>4、KVC异常处理</h3><p>当根据KVC搜索规则，没有搜索到对应的key或者keyPath，则会调用对应的异常方法。异常方法的默认实现，在异常发生时会抛出一个<code>NSUndefinedKeyException</code>的异常，并且应用程序<code>Crash</code>。我们可以重写下面两个方法，根据业务需求合理的处理KVC导致的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>其中重写这两个方法，在<code>key</code>值不存在的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>重写这个方法，当value值为nil的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<h3 id="5、KVC的正确性验证"><a href="#5、KVC的正确性验证" class="headerlink" title="5、KVC的正确性验证"></a>5、KVC的正确性验证</h3><p>在调用KVC时可以先进行验证，验证通过下面两个方法进行，支持key和keyPath两种方式。验证方法默认实现返回YES，可以通过重写对应的方法修改验证逻辑。</p>
+<p>验证方法需要我们手动调用，并不会在进行KVC的过程中自动调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKeyPath:(NSString *)inKeyPath error:(out NSError **)outError;</span><br></pre></td></tr></table></figure></p>
+<p> 在validateValue方法的内部实现中，如果传入的value或key有问题，可以通过返回NO来表示错误，并设置NSError对象。</p>
+<p> 因为还需要我们手动调用校验，感觉用处不太大。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/20/3-KVO/" rel="next" title="3.KVO">
+                <i class="fa fa-chevron-left"></i> 3.KVO
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/headIcon.png" alt="NSLegend">
+            
+              <p class="site-author-name" itemprop="name">NSLegend</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry,Stay Foolish.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/WSGNSLog" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.jianshu.com/u/ba5f297de9bc" target="_blank" title="简书">
+                      
+                        <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1、KVC中常见方法"><span class="nav-number">1.</span> <span class="nav-text">1、KVC中常见方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2、KVC的内部实现机制"><span class="nav-number">2.</span> <span class="nav-text">2、KVC的内部实现机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#KVO的setValue-forKey原理"><span class="nav-number">2.1.</span> <span class="nav-text">KVO的setValue:forKey原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KVO的ValueforKey原理"><span class="nav-number">2.2.</span> <span class="nav-text">KVO的ValueforKey原理</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3、KVC的使用"><span class="nav-number">3.</span> <span class="nav-text">3、KVC的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#KVC基础使用"><span class="nav-number">3.1.</span> <span class="nav-text">KVC基础使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KVC中使用keyPath"><span class="nav-number">3.2.</span> <span class="nav-text">KVC中使用keyPath</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KVC之集合属性"><span class="nav-number">3.3.</span> <span class="nav-text">KVC之集合属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KVC之字典属性"><span class="nav-number">3.4.</span> <span class="nav-text">KVC之字典属性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4、KVC异常处理"><span class="nav-number">4.</span> <span class="nav-text">4、KVC异常处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5、KVC的正确性验证"><span class="nav-number">5.</span> <span class="nav-text">5、KVC的正确性验证</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NSLegend</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

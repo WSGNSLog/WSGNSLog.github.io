@@ -252,6 +252,402 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/4-KVC/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/4-KVC/" itemprop="url">4.KVC</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T16:00:13+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。</p>
+<h3 id="1、KVC中常见方法"><a href="#1、KVC中常见方法" class="headerlink" title="1、KVC中常见方法"></a>1、KVC中常见方法</h3><p>我们随便点击进入<code>setValue:forKey</code>方法，我们可以发现里面的方法基本上都是基于<code>NSObject</code>的<code>NSKeyValueCoding</code>分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Objective-C对象都能使用KVC(一些纯Swift类和结构体是不支持KVC的)，下面是KVC最为重要的四个方法<br><img src="/2018/12/20/4-KVC/KVC1.png" title="KVC1"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForKey:(NSString *)key;                          //直接通过Key来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKey:(NSString *)key;          //通过Key来设值</span><br><span class="line">- (nullable id)valueForKeyPath:(NSString *)keyPath;                  //通过KeyPath来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKeyPath:(NSString *)keyPath;  //通过KeyPath来设值</span><br></pre></td></tr></table></figure></p>
+<p><code>NSKeyValueCoding</code>类别中还有其他的一些方法，这些方法在碰到特殊情况或者有特殊需求还是会用到的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)accessInstanceVariablesDirectly;</span><br><span class="line">//默认返回YES，表示如果没有找到Set&lt;Key&gt;方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员，设置成NO就不这样搜索</span><br><span class="line"></span><br><span class="line">- (BOOL)validateValue:(inout id __nullable * __nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">//KVC提供属性值正确性�验证的API，它可以用来检查set的值是否正确、为不正确的值做一个替换值或者拒绝设置新值并返回错误原因。</span><br><span class="line"></span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">//这是集合操作的API，里面还有一系列这样的API，如果属性是一个NSMutableArray，那么可以用这个方法来返回。</span><br><span class="line"></span><br><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">//如果Key不存在，且没有KVC无法搜索到任何和Key有关的字段或者属性，则会调用这个方法，默认是抛出异常。</span><br><span class="line"></span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">//和上一个方法一样，但这个方法是设值。</span><br><span class="line"></span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br><span class="line">//如果你在SetValue方法时面给Value传nil，则会调用这个方法</span><br><span class="line"></span><br><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">//输入一组key,返回该组key对应的Value，再转成字典返回，用于将Model转到字典。</span><br></pre></td></tr></table></figure></p>
+<h3 id="2、KVC的内部实现机制"><a href="#2、KVC的内部实现机制" class="headerlink" title="2、KVC的内部实现机制"></a>2、KVC的内部实现机制</h3><h4 id="KVO的setValue-forKey原理"><a href="#KVO的setValue-forKey原理" class="headerlink" title="KVO的setValue:forKey原理"></a>KVO的<code>setValue:forKey</code>原理</h4><p>我们先来一张图片可以直接明了的看清楚实现原理<br><img src="/2018/12/20/4-KVC/KVC2.png" title="KVC2"></p>
+<ul>
+<li>1、按照<code>setKey</code>，<code>_setKey</code>的顺序查找<code>成员方法</code>，如果找到方法，传递参数，调用方法</li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值（<code>accessInstanceVariablesDirectly</code>的返回值默认是<code>YES</code>），<ul>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接赋值，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+</li>
+</ul>
+<h4 id="KVO的ValueforKey原理"><a href="#KVO的ValueforKey原理" class="headerlink" title="KVO的ValueforKey原理"></a>KVO的<code>ValueforKey</code>原理</h4><img src="/2018/12/20/4-KVC/KVC3.png" title="KVC3">
+<ul>
+<li>1、按照<code>getKey,key,isKey,_key</code>的顺序查找<code>成员方法</code>，如果找到直接调用<code>取值</code></li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值</li>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接<code>取值</code>，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+<h3 id="3、KVC的使用"><a href="#3、KVC的使用" class="headerlink" title="3、KVC的使用"></a>3、KVC的使用</h3><h4 id="KVC基础使用"><a href="#KVC基础使用" class="headerlink" title="KVC基础使用"></a>KVC基础使用</h4><p>假设我们有一个<code>Person</code>类，里面有一个<code>age</code>属性，我们给<code>age</code>赋值和取值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;age&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;age&quot;]</span><br></pre></td></tr></table></figure>
+<p>这也是最简单的使用方法了，也是我们平时项目中最常使用的方法了</p>
+<h4 id="KVC中使用keyPath"><a href="#KVC中使用keyPath" class="headerlink" title="KVC中使用keyPath"></a>KVC中使用keyPath</h4><p>但是当<code>Person</code>类里面有一个<code>student</code>类，里面有一个<code>height</code>属性，我们怎么赋值<code>height</code>属性呢，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Student *stu;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们能否这样写呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;stu.height&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;stu.height&quot;]</span><br></pre></td></tr></table></figure></p>
+<p>我们运行程序打印结果<br><img src="/2018/12/20/4-KVC/KVC4.png" title="KVC4"></p>
+<p>打印结果是<code>this class is not key value coding-compliant for the key stu.height.</code>,所以这个方法是不可以的，但是iOS为我们提供了另一个方法<code>KeyPath</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">p.stu = [[Student alloc]init];</span><br><span class="line">[p setValue:@180 forKeyPath:@&quot;stu.height&quot;];</span><br><span class="line">NSLog(@&quot;valueForKey:%@&quot;,[p valueForKeyPath:@&quot;stu.height&quot;]);</span><br><span class="line">NSLog(@&quot;stu.height:%f&quot;,p.stu.height);</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/4-KVC/KVC5.png" title="KVC5"></p>
+<p><code>keyPath</code>除了对当前对象的属性进行赋值外，还可以对其更“深层”的对象进行赋值。KVC进行多级访问时，直接类似于属性调用一样用点语法进行访问即可。</p>
+<h4 id="KVC之集合属性"><a href="#KVC之集合属性" class="headerlink" title="KVC之集合属性"></a>KVC之集合属性</h4><p>如果我们想要修改集合类型，我们该怎么办呢，不要着急，系统还是很友好的给我们提供了一些方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableSet *)mutableSetValueForKey:(NSString *)key</span><br><span class="line">- (NSMutableSet *)mutableSetValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKey:(NSString *)key </span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKeyPath:(NSString *)keyPath</span><br></pre></td></tr></table></figure></p>
+<p>简单使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">[[p mutableArrayValueForKey:@&quot;list&quot;] addObject:@&quot;test&quot;];</span><br><span class="line">NSLog(@&quot;mutableArrayValueForKey:%@&quot;,[p valueForKeyPath:@&quot;list&quot;]);</span><br><span class="line">NSLog(@&quot;%@&quot;,p.list);</span><br></pre></td></tr></table></figure></p>
+<p>关于<code>mutableArrayValueForKey:</code>的适用场景，网上一般说是在<code>KVO</code>中，因为<code>KVO的本质是系统监测到某个属性的内存地址或常量改变</code>时会添加上<code>- (void)willChangeValueForKey:(NSString *)key</code>和<code>- (void)didChangeValueForKey:(NSString *)key</code>方法来发送通知，但是如果直接改数组的话，内存地址并没有改变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">_p = [[Person alloc]init];</span><br><span class="line">[_p addObserver:self forKeyPath:@&quot;list&quot; options:options context:nil];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">//    [_p.list addObject:@(arc4random()%255)];</span><br><span class="line">//    NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">//    NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</span><br><span class="line">NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSString *,id&gt; *)change context:(void *)context&#123;</span><br><span class="line">NSLog(@&quot;%@&quot;,change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)dealloc&#123;</span><br><span class="line">[_p removeObserver:self forKeyPath:@&quot;list&quot;]; //一定要在dealloc里面移除观察</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们分别用<code>[_p.list addObject:@(arc4random()%255)];</code>和<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>两个方法修改<code>list</code>内容，我们打印可知<code>[_p.list addObject:@(arc4random()%255)];</code>方法并没有改变<code>list</code>的内存地址，而使用<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>  ， <code>list</code>的内存地址改变了。</p>
+<h4 id="KVC之字典属性"><a href="#KVC之字典属性" class="headerlink" title="KVC之字典属性"></a>KVC之字典属性</h4><p>KVC里面还有两个关于NSDictionary的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">- (void)setValuesForKeysWithDictionary:(NSDictionary&lt;NSString *, id&gt; *)keyedValues;</span><br></pre></td></tr></table></figure></p>
+<p><code>dictionaryWithValuesForKeys:</code>是指输入一组key，返回这组key对应的属性，再组成一个字典<br><code>setValuesForKeysWithDictionary</code>是用来修改dic中对应key的属性</p>
+<p>这个属性最常用到的地方就是字典转模型<br>例如我们有一个<code>Student</code>类，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface Student : NSObject</span><br><span class="line">@property (nonatomic,assign) float height;</span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line">@property (nonatomic,strong) NSString *name;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们正常是怎么赋值呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu.age = 10;</span><br><span class="line">stu.name = @&quot;jack&quot;;</span><br><span class="line">stu.height = 180;</span><br></pre></td></tr></table></figure></p>
+<p>如果里面有100个属性呢，我们就需要写100遍<br>如果使用<code>setValuesForKeysWithDictionary</code>方法呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">//在进行网络请求的时候dic不需要我们手写，是后台返回的</span><br><span class="line">NSDictionary *dic = @&#123;@&quot;name&quot;:@&quot;jack&quot;,@&quot;height&quot;:@180,@&quot;age&quot;:@10&#125;;</span><br><span class="line">[stu setValuesForKeysWithDictionary:dic];</span><br></pre></td></tr></table></figure></p>
+<p>这样是不是简单了好多。</p>
+<h3 id="4、KVC异常处理"><a href="#4、KVC异常处理" class="headerlink" title="4、KVC异常处理"></a>4、KVC异常处理</h3><p>当根据KVC搜索规则，没有搜索到对应的key或者keyPath，则会调用对应的异常方法。异常方法的默认实现，在异常发生时会抛出一个<code>NSUndefinedKeyException</code>的异常，并且应用程序<code>Crash</code>。我们可以重写下面两个方法，根据业务需求合理的处理KVC导致的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>其中重写这两个方法，在<code>key</code>值不存在的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>重写这个方法，当value值为nil的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<h3 id="5、KVC的正确性验证"><a href="#5、KVC的正确性验证" class="headerlink" title="5、KVC的正确性验证"></a>5、KVC的正确性验证</h3><p>在调用KVC时可以先进行验证，验证通过下面两个方法进行，支持key和keyPath两种方式。验证方法默认实现返回YES，可以通过重写对应的方法修改验证逻辑。</p>
+<p>验证方法需要我们手动调用，并不会在进行KVC的过程中自动调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKeyPath:(NSString *)inKeyPath error:(out NSError **)outError;</span><br></pre></td></tr></table></figure></p>
+<p> 在validateValue方法的内部实现中，如果传入的value或key有问题，可以通过返回NO来表示错误，并设置NSError对象。</p>
+<p> 因为还需要我们手动调用校验，感觉用处不太大。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/3-KVO/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/3-KVO/" itemprop="url">3.KVO</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T15:25:59+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><code>KVO（key value observing）</code>键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化</p>
+<p>KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code></p>
+<p>在学习实现原理之前先了解一下KVO常用的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">注册监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者在回调函数中会被回传</span><br><span class="line">监听的属性路径为keyPath支持点语法的嵌套</span><br><span class="line">监听类型为options支持按位或来监听多个事件类型</span><br><span class="line">监听上下文context主要用于在多个监听器对象监听相同keyPath时进行区分</span><br><span class="line">添加监听器只会保留监听器对象的地址，不会增加引用，也不会在对象释放后置空，因此需要自己持有监听对象的强引用，该参数也会在回调函数中回传</span><br><span class="line">*/</span><br><span class="line">- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">删除监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者，应与addObserver方法匹配</span><br><span class="line">监听的属性路径为keyPath，应与addObserver方法的keyPath匹配</span><br><span class="line">监听上下文context，应与addObserver方法的context匹配</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context API_AVAILABLE(macos(10.7), ios(5.0), watchos(2.0), tvos(9.0));</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">与上一个方法相同，只是少了context参数</span><br><span class="line">推荐使用上一个方法，该方法由于没有传递context可能会产生异常结果</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">监听器对象的监听回调方法</span><br><span class="line">keyPath即为监听的属性路径</span><br><span class="line">object为被监听的对象</span><br><span class="line">change保存被监听的值产生的变化</span><br><span class="line">context为监听上下文，由add方法回传</span><br><span class="line">*/</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context;</span><br></pre></td></tr></table></figure>
+<h3 id="KVO简单实现"><a href="#KVO简单实现" class="headerlink" title="KVO简单实现"></a>KVO简单实现</h3><p>我们创建一个<code>person</code>对象，然后在里面添加一个<code>age</code>属性，我们就来观察一下<code>age</code>属性<br><strong>person对象</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic,assign) NSInteger age;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p><strong>简单实现</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;ViewController.h&quot;</span><br><span class="line">#import &quot;Person.h&quot;</span><br><span class="line">@interface ViewController ()</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Person *p1;</span><br><span class="line">@property (nonatomic,strong) Person *p2;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation ViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line"></span><br><span class="line">self.p1 = [[Person alloc]init];</span><br><span class="line">self.p2 = [[Person alloc]init];</span><br><span class="line">self.p1.age = 10;</span><br><span class="line">self.p2.age = 20;</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">self.p1.age = arc4random()%100;</span><br><span class="line">self.p2.age = arc4random()%100;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">[self.p1 removeObserver:self forKeyPath:@&quot;age&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">// 当监听对象的属性值发生改变时，就会调用</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;监听到%@的%@属性值改变了 - %@ - %@&quot;, object, keyPath, change, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上代码就是一个<code>KVO</code>的简单实现，但是我们有没有想过他的内部到底是怎样实现的呢，今天我们就来探究一下<code>KVO</code>的内部实现原理</p>
+<h3 id="KVO的内部实现"><a href="#KVO的内部实现" class="headerlink" title="KVO的内部实现"></a>KVO的内部实现</h3><p>探究一个对象底层实现最简单的办法就行打印一些对象信息，看看有什么改变</p>
+<p>我们在给<code>person1</code>添加监听之前分别打印<code>p1,p2</code>的类信息<br>代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO1.png" title="KVO1"></p>
+<p>我们根据结果看到，在添加KVO观察者之后<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，虽然<code>p1</code>的类对象变成了<code>NSKVONotifying_Person</code>，但是我们在调用的时候感觉我们的<code>p1</code>的类对象还是<code>Person</code>，所以，我们可以猜测<code>KVO</code>会在运行时动态创建一个新类，将对象的<code>isa</code>指向新创建的类，<code>新类是原类的子类</code>，命名规则是<code>NSKVONotifying_xxx</code>的格式。KVO为了使其更像之前的类，还会将对象的<code>class实例方法重写</code>，使其更像原类</p>
+<p> <strong>查看P1内部方法是否改变</strong></p>
+<p>我们在发现<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，那我们也随便打印一下<code>Person</code>和<code>NSKVONotifying_Person</code>内部方法都变成了什么</p>
+<p>打印一下方法名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (void)printMethodNamesOfClass:(Class)cls</span><br><span class="line">&#123;</span><br><span class="line">unsigned int count;</span><br><span class="line">// 获得方法数组</span><br><span class="line">Method *methodList = class_copyMethodList(cls, &amp;count);</span><br><span class="line"></span><br><span class="line">// 存储方法名</span><br><span class="line">NSMutableString *methodNames = [NSMutableString string];</span><br><span class="line"></span><br><span class="line">// 遍历所有的方法</span><br><span class="line">for (int i = 0; i &lt; count; i++) &#123;</span><br><span class="line">// 获得方法</span><br><span class="line">Method method = methodList[i];</span><br><span class="line">// 获得方法名</span><br><span class="line">NSString *methodName = NSStringFromSelector(method_getName(method));</span><br><span class="line">// 拼接方法名</span><br><span class="line">[methodNames appendString:methodName];</span><br><span class="line">[methodNames appendString:@&quot;, &quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 释放</span><br><span class="line">free(methodList);</span><br><span class="line"></span><br><span class="line">// 打印方法名</span><br><span class="line">NSLog(@&quot;%@ %@&quot;, cls, methodNames);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们分别在KVO监听前后在分别打印一下<code>p1</code>的类对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO2.png" title="KVO2"></p>
+<p>我们在来打印一些KVO监听前后<code>setAge</code>方法发生了什么改变，因为值得改变肯定是因为<code>set</code>方法导致的，所以我们打印一下<code>setAge</code>方法。<code>methodForSelector</code>可以打印方法地址，我们分别在KVO监听前后打印</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br></pre></td></tr></table></figure>
+<p>打印结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2018-09-04 10:41:05.823343+0800 KVO[21971:1023542] person1添加KVO监听之前 - 0x103f18540 0x103f18540</span><br><span class="line">2018-09-04 10:41:05.823702+0800 KVO[21971:1023542] person1添加KVO监听之后 - 0x10425ebf4 0x103f18540</span><br></pre></td></tr></table></figure></p>
+<p>我们可以利用lldb分别看一下具体的方法实现：</p>
+<img src="/2018/12/20/3-KVO/KVO5.png" title="KVO5">
+<p>根据以上总结，我们大概猜到在使用KVO前后对象的改变了<br><strong>未使用KVO监听的对象</strong></p>
+<img src="/2018/12/20/3-KVO/KVO3.png" title="KVO3">
+<p><strong>使用KVO监听的对象</strong><br><img src="/2018/12/20/3-KVO/KVO4.png" title="KVO4"></p>
+<ul>
+<li>1、重写class方法是为了我们调用它的时候返回跟重写继承类之前同样的内容。KVO底层交换了 NSKVONotifying_Person 的 class 方法，让其返回 Person</li>
+<li>2、重写setter方法:在新的类中会重写对应的set方法，是为了在set方法中增加另外两个方法的调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (void)willChangeValueForKey:(NSString *)key</span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在didChangeValueForKey:方法再调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath</span><br><span class="line">ofObject:(id)object</span><br><span class="line">change:(NSDictionary *)change</span><br><span class="line">context:(void *)context</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>3、重写dealloc方法，销毁新生成的NSKVONotifying_类。</li>
+<li>4、重写_isKVOA方法，这个私有方法估计可能是用来标示该类是一个 KVO 机制声称的类。</li>
+</ul>
+<h3 id="NSSetLongLongValueAndNotify"><a href="#NSSetLongLongValueAndNotify" class="headerlink" title="_NSSetLongLongValueAndNotify"></a>_NSSetLongLongValueAndNotify</h3><p>在添加KVO监听方法以后<code>setAge</code>方法变成了<code>_NSSetLongLongValueAndNotify</code>,所以我们可以大概猜测动态监听方法主要就是在这里面实现的</p>
+<p>我们可以在终端使用<code>nm -a /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation | grep ValueAndNotify</code>命令来查看<code>NSSet*ValueAndNotify</code>的类型<br><img src="/2018/12/20/3-KVO/KVO6.png" title="KVO6"></p>
+<p>我们可以在<code>Person</code>类中重写<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>,来猜测一下<code>_NSSetLongLongValueAndNotify</code>的内部实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (void)setAge:(NSInteger)age&#123;</span><br><span class="line">_age = age;</span><br><span class="line">NSLog(@&quot;调用set方法&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (void)willChangeValueForKey:(NSString *)key&#123;</span><br><span class="line">[super willChangeValueForKey:key];</span><br><span class="line">NSLog(@&quot;willChangeValueForKey&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - begin&quot;);</span><br><span class="line"></span><br><span class="line">[super didChangeValueForKey:key];</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - end&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2018/12/20/3-KVO/KVO7.png" title="KVO7">
+<p>根据打印结果我们可以推断<code>_NSSetLongLongValueAndNotify</code>内部实现为</p>
+<ul>
+<li>1、调用<code>willChangeValueForKey</code>方法</li>
+<li>2、调用<code>setAge</code>方法</li>
+<li>3、调用’didChangeValueForKey’方法</li>
+<li>4、’didChangeValueForKey’方法内部调用<code>oberser</code>的<code>observeValueForKeyPath:ofObject:change:context:</code>方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 伪代码</span><br><span class="line">void _NSSetIntValueAndNotify()</span><br><span class="line">&#123;</span><br><span class="line">[self willChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">[super setAge:age];</span><br><span class="line">[self didChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br><span class="line">&#123;</span><br><span class="line">// 通知监听器，某某属性值发生了改变</span><br><span class="line">[oberser observeValueForKeyPath:key ofObject:self change:nil context:nil];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="面试题"><a href="#面试题" class="headerlink" title="面试题"></a>面试题</h3><p><strong>1、iOS用什么方式实现对一个对象的KVO（KVO的本质是什么？）</strong></p>
+<ul>
+<li>1、利用RuntimeAPI动态生成一个子类<code>NSKVONotifying_XXX</code>,并且让instance对象的isa指向这个全新的子类<code>NSKVONotifying_XXX</code></li>
+<li>2、当修改对象的属性时，会在子类<code>NSKVONotifying_XXX</code>调用Foundation的<code>_NSSetXXXValueAndNotify</code>函数</li>
+<li>3、在<code>_NSSetXXXValueAndNotify</code>函数中一次调用<ul>
+<li>1、willChangeValueForKey</li>
+<li>2、父类原来的setter</li>
+<li>3、didChangeValueForKey，didChangeValueForKey：内部会出发监听器（Observer）的监听方法( observeValueForKeyPath:ofObject:change:context:）</li>
+</ul>
+</li>
+</ul>
+<p><strong>2、如何手动触发KVO方法</strong><br>手动调用<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>方法</p>
+<p>键值观察通知依赖于 NSObject 的两个方法: <code>willChangeValueForKey:</code> 和 <code>didChangeValueForKey</code>。在一个被观察属性发生改变之前， <code>willChangeValueForKey:</code> 一定会被调用，这就<br>会记录旧的值。而当改变发生后， <code>didChangeValueForKey</code> 会被调用，继而 <code>observeValueForKey:ofObject:change:context:</code>也会被调用。如果可以手动实现这些调用，就可以实现“手动触发”了</p>
+<p>有人可能会问只调用<code>didChangeValueForKey</code>方法可以触发KVO方法，其实是不能的，因为<code>willChangeValueForKey:</code> 记录旧的值，如果不记录旧的值，那就没有改变一说了</p>
+<p><strong>3、直接修改成员变量会触发KVO吗</strong><br>不会触发KVO，因为<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code>，直接修改成员变量，是在内存中修改的，不走<code>set</code>方法</p>
+<p><strong>4、不移除KVO监听，会发生什么</strong></p>
+<ul>
+<li>不移除会造成内存泄漏</li>
+<li>但是多次重复移除会崩溃。系统为了实现KVO，为NSObject添加了一个名为NSKeyValueObserverRegistration的Category，KVO的add和remove的实现都在里面。在移除的时候，系统会判断当前KVO的key是否已经被移除，如果已经被移除，则主动抛出一个NSException的异常</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/2-OC对象的分类/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -294,6 +690,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -323,7 +741,44 @@
       
         
           
-            
+            <p>OC对象主要可以分为3种</p>
+<ul>
+<li>1、instance对象（实例对象）：instance实例对象就是通过alloc出来的对象，每次调用alloc都会产生新的instance对象</li>
+<li>2、class对象（类对象）：每个类的内存中有且只有一个类对象</li>
+<li>3、meta-class对象（元类对象）：每个类的内存中有且只有一个元类对象</li>
+</ul>
+<p>实例对象的存储信息</p>
+<ul>
+<li>isa指针</li>
+<li>其他成员变量</li>
+</ul>
+<p>类对象的存储信息<br>-isa指针</p>
+<ul>
+<li>superClass指针</li>
+<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
+</ul>
+<p>元类的存储信息</p>
+<ul>
+<li>isa指针</li>
+<li>superClass指针</li>
+<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
+</ul>
+<p><code>元类和类的存储结构是一样的，但是用途不一样</code><br><img src="/2018/12/20/2-OC对象的分类/OC对象的分类1.png" title="OOC对象的分类1"></p>
+<ul>
+<li>instance的isa指向class，当调用<code>对象方法</code>时，通过instance的isa找到class，最后找到对象方法的实现进行调用</li>
+<li>class的isa指向meta-class，当调用<code>类方法</code>时，通过class当isa找到meta-class，最后找到<code>类方法</code></li>
+</ul>
+<h3 id="总览图"><a href="#总览图" class="headerlink" title="总览图"></a>总览图</h3><img src="/2018/12/20/2-OC对象的分类/OC对象的分类2.png" title="OOC对象的分类2">
+<ul>
+<li>1、instance的isa指向class</li>
+<li>2、class的isa指向meta-class</li>
+<li>3、meta-class的isa指向基类的meta-class</li>
+<li>4、class的superclass指向父类的class，如果没有父类，superclass指向nil</li>
+<li>5、meta-class的superclass指向父类的meta-class，基类的meta-class的superclass指向基类的class</li>
+<li>6、instance的调用轨迹：isa找class，方法不存在，就通过superclass找父类</li>
+<li>7、class调用类方法的轨迹：isa找到meta-class，方法不存在，就通过superclass找父类</li>
+</ul>
+
           
         
       
@@ -1476,335 +1931,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/心灵鸡汤01/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/心灵鸡汤01/" itemprop="url">心灵鸡汤01</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T16:16:57+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
-                    <span itemprop="name">心灵鸡汤</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>你为什么要那么努力？<br>因为我喜欢的东西都很贵，我想去的地方都很远，我爱的人超完美。</p>
-<hr>
-<p>喜欢的东西就努力去争取，因为能喜欢的人和事，本来就不多。</p>
-<hr>
-<p>再努力一点，见想见的人，做想做的事。</p>
-<hr>
-<p>Death is what gives life meaning.To know your days are numbered.Your time is short.(死亡赋予生命意义，让你知道时光短暂，去日无多)-《奇异博士》</p>
-<hr>
-<p>生命中充满了太多的不确定，所以要抓紧时间做自己最想做的事情，在我们没有机会之前。。—-《时光情书》</p>
-<hr>
-<p>在等待的日子里，刻苦读书，谦卑做人，养得深根，日后才能枝叶茂盛。</p>
-<hr>
-<p>愿少年在征途后 回眸时 </p>
-<p>眼有星辰大海 </p>
-<p>胸有丘壑万千 </p>
-<p>心有繁花似锦</p>
-<hr>
-<p>每一个优秀的人，都有一段沉默的时光。那一段时光，是付出了很多努力，忍受了很多的孤独和寂寞，不抱怨不诉苦，只有自己知道。而当日后说起时，连自己都能被感动的日子。</p>
-<hr>
-<p>人最大的魅力，是有一颗阳光的心态。韶华易逝，容颜易老，浮华终是云烟。拥抱一颗阳光的心态，得失了无忧，来去都随缘。心无所求，便不受万象牵绊；心无牵绊，坐也从容，行也从容，故生优雅。一个优雅的人，养眼又养心，才是魅力十足的人。容貌乃天成，浮华在身外，心里满是阳光，才是永恒的美</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/iOS签名机制02/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/iOS签名机制02/" itemprop="url">iOS签名机制02</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T11:39:56+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>密钥配送问题</p>
-<ul>
-<li>分配中心</li>
-<li>公钥密码（非对称密码）：<ul>
-<li>加密密钥，一般是公开的，因此该密钥成为公钥</li>
-<li>解密密钥，由消息接收者自己保管，不能公开，因此也称为私钥</li>
-<li>公钥和私钥是一一对应的，是不能单独生成的，一对公钥和私钥统称为密钥对</li>
-<li>由公钥加密的密文，必须使用与该公钥对应的私钥才能解密</li>
-<li>由私钥加密的密文，必须使用与该私钥对应的公钥才能解密</li>
-</ul>
-</li>
-</ul>
-<p>解决密钥配送问题</p>
-<ul>
-<li>由消息的接收者，生成一对公钥、私钥</li>
-<li>将公钥发给消息的发送者</li>
-<li>消息的发送者使用公钥加密消息</li>
-</ul>
-<p>RSA</p>
-<ul>
-<li>目前使用最广泛的公钥密码算法是RSA</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1852,7 +1983,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">22</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
