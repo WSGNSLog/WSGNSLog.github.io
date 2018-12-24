@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,20 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="首先创建一个person类，然后在创建person类的两个分类Person+eat&amp;amp;Person+Run。研究原理的思路是  1、生成c++文件，查看c++文件中的实现 2、如果c++文件中实现介绍的不太具体就去查看源码实现  我们使用xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc Person+eat.m来生成c++代码">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="5.1 分类的实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/5-1-分类的实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="首先创建一个person类，然后在创建person类的两个分类Person+eat&amp;amp;Person+Run。研究原理的思路是  1、生成c++文件，查看c++文件中的实现 2、如果c++文件中实现介绍的不太具体就去查看源码实现  我们使用xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc Person+eat.m来生成c++代码">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:19:27.378Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/5-1-分类的实现原理/分类.png">
+<meta property="og:updated_time" content="2018-12-24T02:27:46.099Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="5.1 分类的实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="首先创建一个person类，然后在创建person类的两个分类Person+eat&amp;amp;Person+Run。研究原理的思路是  1、生成c++文件，查看c++文件中的实现 2、如果c++文件中实现介绍的不太具体就去查看源码实现  我们使用xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc Person+eat.m来生成c++代码">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/5-1-分类的实现原理/分类.png">
 
 
 
@@ -292,6 +295,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +344,42 @@
       
 
       
-        
+        <p>首先创建一个<code>person</code>类，然后在创建<code>person</code>类的两个分类<code>Person+eat</code>&amp;<code>Person+Run</code>。<br>研究原理的思路是</p>
+<ul>
+<li>1、生成c++文件，查看c++文件中的实现</li>
+<li>2、如果c++文件中实现介绍的不太具体就去查看<a href="https://opensource.apple.com/source/objc4/" target="_blank" rel="noopener">源码</a>实现</li>
+</ul>
+<p>我们使用<code>xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc Person+eat.m</code>来生成c++代码</p>
+<p>我们可以找到分类都包含了哪些东西<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct _category_t &#123;</span><br><span class="line">const char *name;</span><br><span class="line">struct _class_t *cls;</span><br><span class="line">const struct _method_list_t *instance_methods;</span><br><span class="line">const struct _method_list_t *class_methods;</span><br><span class="line">const struct _protocol_list_t *protocols;</span><br><span class="line">const struct _prop_list_t *properties;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们发现里面并没有对方法属性协议等等的具体实现过程，那么我们在去<a href="https://opensource.apple.com/source/objc4/" target="_blank" rel="noopener">源码</a>中查看一下相关实现过程。</p>
+<p>源码解读顺序</p>
+<ul>
+<li>1、objc-os.mm（runtime初始化的代码）<ul>
+<li>_objc_init</li>
+<li>map_images</li>
+<li>map_images_nolock</li>
+</ul>
+</li>
+<li>2、objc-runtime-new.mm<ul>
+<li>_read_images</li>
+<li>remethodizeClass</li>
+<li>attachCategories</li>
+<li>attachLists</li>
+<li>realloc、memmove、 memcpy</li>
+</ul>
+</li>
+</ul>
+<p>我们按照源码查找一路找到<code>attachCategories</code>方法，我们发现这个方法就是对分类的实现。里面第一句解释<code>Attach method lists and properties and protocols from categories to a class.</code>将方法列表、属性和协议从类别附加到类中。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">static void </span><br><span class="line">attachCategories(Class cls, category_list *cats, bool flush_caches)</span><br><span class="line">&#123;</span><br><span class="line">if (!cats) return;</span><br><span class="line">if (PrintReplacedMethods) printReplacements(cls, cats);</span><br><span class="line"></span><br><span class="line">bool isMeta = cls-&gt;isMetaClass();</span><br><span class="line"></span><br><span class="line">//方法数组，这是一个二维数组</span><br><span class="line">/*</span><br><span class="line">[</span><br><span class="line">[method_t,method_t],</span><br><span class="line">[method_t,method_t]</span><br><span class="line">]</span><br><span class="line">*/</span><br><span class="line">method_list_t **mlists = (method_list_t **)</span><br><span class="line">malloc(cats-&gt;count * sizeof(*mlists));</span><br><span class="line">//属性数组，这是一个二维数组</span><br><span class="line">property_list_t **proplists = (property_list_t **)</span><br><span class="line">malloc(cats-&gt;count * sizeof(*proplists));</span><br><span class="line">//协议数组，这是一个二维数组</span><br><span class="line">protocol_list_t **protolists = (protocol_list_t **)</span><br><span class="line">malloc(cats-&gt;count * sizeof(*protolists));</span><br><span class="line"></span><br><span class="line">int mcount = 0;</span><br><span class="line">int propcount = 0;</span><br><span class="line">int protocount = 0;</span><br><span class="line">int i = cats-&gt;count;</span><br><span class="line">bool fromBundle = NO;</span><br><span class="line">while (i--) &#123;</span><br><span class="line">//取出某个分类</span><br><span class="line">auto&amp; entry = cats-&gt;list[i];</span><br><span class="line">//取出分类里面的方法列表</span><br><span class="line">method_list_t *mlist = entry.cat-&gt;methodsForMeta(isMeta);</span><br><span class="line">if (mlist) &#123;</span><br><span class="line">mlists[mcount++] = mlist;</span><br><span class="line">fromBundle |= entry.hi-&gt;isBundle();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">property_list_t *proplist = </span><br><span class="line">entry.cat-&gt;propertiesForMeta(isMeta, entry.hi);</span><br><span class="line">if (proplist) &#123;</span><br><span class="line">proplists[propcount++] = proplist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">protocol_list_t *protolist = entry.cat-&gt;protocols;</span><br><span class="line">if (protolist) &#123;</span><br><span class="line">protolists[protocount++] = protolist;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">//得到对象里面的数据</span><br><span class="line">auto rw = cls-&gt;data();</span><br><span class="line"></span><br><span class="line">prepareMethodLists(cls, mlists, mcount, NO, fromBundle);</span><br><span class="line">//将所有分类的对象方法，附加到类对象的方法列表中</span><br><span class="line">rw-&gt;methods.attachLists(mlists, mcount);</span><br><span class="line">free(mlists);</span><br><span class="line">if (flush_caches  &amp;&amp;  mcount &gt; 0) flushCaches(cls);</span><br><span class="line">//将所有分类的属性，附加到类对象的属性列表中</span><br><span class="line">rw-&gt;properties.attachLists(proplists, propcount);</span><br><span class="line">free(proplists);</span><br><span class="line">//将所有分类的协议，附加到类对象的协议列表中</span><br><span class="line">rw-&gt;protocols.attachLists(protolists, protocount);</span><br><span class="line">free(protolists);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们发现<code>rw-&gt;methods.attachLists(mlists, mcount);</code>方法是实现将所有分类的对象方法，附加到类对象的方法列表中，其他两个属性和协议都是调用这个方法，我们分析一个就可以了。</p>
+<p>点击进入<code>attachLists</code>方法，里面有一个段实现代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">if (hasArray()) &#123;</span><br><span class="line">// many lists -&gt; many lists</span><br><span class="line">uint32_t oldCount = array()-&gt;count;</span><br><span class="line">uint32_t newCount = oldCount + addedCount;</span><br><span class="line">setArray((array_t *)realloc(array(), array_t::byteSize(newCount)));</span><br><span class="line">array()-&gt;count = newCount;</span><br><span class="line">//array()-&gt;list 原来的方法列表</span><br><span class="line">memmove(array()-&gt;lists + addedCount, array()-&gt;lists, </span><br><span class="line">oldCount * sizeof(array()-&gt;lists[0]));</span><br><span class="line">//addedList 所有分类的方法列表</span><br><span class="line">memcpy(array()-&gt;lists, addedLists, </span><br><span class="line">addedCount * sizeof(array()-&gt;lists[0]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>1、扩容，把类中的方法数组和分类中的方法数组计算出来</li>
+<li>2、<code>memmove</code>把类中方法放到数组的最后一位</li>
+<li>3、<code>memcpy</code>把分类中的方法放到数组的前面。</li>
+</ul>
+<img src="/2018/12/21/5-1-分类的实现原理/分类.png" title="分类">
+
       
     </div>
     
@@ -333,6 +393,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
