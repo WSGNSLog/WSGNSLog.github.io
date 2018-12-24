@@ -252,7 +252,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/4-KVC/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/心灵鸡汤03/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="NSLegend">
@@ -271,7 +271,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/12/20/4-KVC/" itemprop="url">4.KVC</a></h1>
+                <a class="post-title-link" href="/2018/12/21/心灵鸡汤03/" itemprop="url">心灵鸡汤03</a></h1>
         
 
         <div class="post-meta">
@@ -283,777 +283,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T16:00:13+08:00">
-                2018-12-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS底层</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。</p>
-<h3 id="1、KVC中常见方法"><a href="#1、KVC中常见方法" class="headerlink" title="1、KVC中常见方法"></a>1、KVC中常见方法</h3><p>我们随便点击进入<code>setValue:forKey</code>方法，我们可以发现里面的方法基本上都是基于<code>NSObject</code>的<code>NSKeyValueCoding</code>分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Objective-C对象都能使用KVC(一些纯Swift类和结构体是不支持KVC的)，下面是KVC最为重要的四个方法<br><img src="/2018/12/20/4-KVC/KVC1.png" title="KVC1"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForKey:(NSString *)key;                          //直接通过Key来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKey:(NSString *)key;          //通过Key来设值</span><br><span class="line">- (nullable id)valueForKeyPath:(NSString *)keyPath;                  //通过KeyPath来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKeyPath:(NSString *)keyPath;  //通过KeyPath来设值</span><br></pre></td></tr></table></figure></p>
-<p><code>NSKeyValueCoding</code>类别中还有其他的一些方法，这些方法在碰到特殊情况或者有特殊需求还是会用到的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)accessInstanceVariablesDirectly;</span><br><span class="line">//默认返回YES，表示如果没有找到Set&lt;Key&gt;方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员，设置成NO就不这样搜索</span><br><span class="line"></span><br><span class="line">- (BOOL)validateValue:(inout id __nullable * __nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">//KVC提供属性值正确性�验证的API，它可以用来检查set的值是否正确、为不正确的值做一个替换值或者拒绝设置新值并返回错误原因。</span><br><span class="line"></span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">//这是集合操作的API，里面还有一系列这样的API，如果属性是一个NSMutableArray，那么可以用这个方法来返回。</span><br><span class="line"></span><br><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">//如果Key不存在，且没有KVC无法搜索到任何和Key有关的字段或者属性，则会调用这个方法，默认是抛出异常。</span><br><span class="line"></span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">//和上一个方法一样，但这个方法是设值。</span><br><span class="line"></span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br><span class="line">//如果你在SetValue方法时面给Value传nil，则会调用这个方法</span><br><span class="line"></span><br><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">//输入一组key,返回该组key对应的Value，再转成字典返回，用于将Model转到字典。</span><br></pre></td></tr></table></figure></p>
-<h3 id="2、KVC的内部实现机制"><a href="#2、KVC的内部实现机制" class="headerlink" title="2、KVC的内部实现机制"></a>2、KVC的内部实现机制</h3><h4 id="KVO的setValue-forKey原理"><a href="#KVO的setValue-forKey原理" class="headerlink" title="KVO的setValue:forKey原理"></a>KVO的<code>setValue:forKey</code>原理</h4><p>我们先来一张图片可以直接明了的看清楚实现原理<br><img src="/2018/12/20/4-KVC/KVC2.png" title="KVC2"></p>
-<ul>
-<li>1、按照<code>setKey</code>，<code>_setKey</code>的顺序查找<code>成员方法</code>，如果找到方法，传递参数，调用方法</li>
-<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值（<code>accessInstanceVariablesDirectly</code>的返回值默认是<code>YES</code>），<ul>
-<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接赋值，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
-<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
-</ul>
-</li>
-</ul>
-<h4 id="KVO的ValueforKey原理"><a href="#KVO的ValueforKey原理" class="headerlink" title="KVO的ValueforKey原理"></a>KVO的<code>ValueforKey</code>原理</h4><img src="/2018/12/20/4-KVC/KVC3.png" title="KVC3">
-<ul>
-<li>1、按照<code>getKey,key,isKey,_key</code>的顺序查找<code>成员方法</code>，如果找到直接调用<code>取值</code></li>
-<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值</li>
-<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接<code>取值</code>，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
-<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
-</ul>
-<h3 id="3、KVC的使用"><a href="#3、KVC的使用" class="headerlink" title="3、KVC的使用"></a>3、KVC的使用</h3><h4 id="KVC基础使用"><a href="#KVC基础使用" class="headerlink" title="KVC基础使用"></a>KVC基础使用</h4><p>假设我们有一个<code>Person</code>类，里面有一个<code>age</code>属性，我们给<code>age</code>赋值和取值</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;age&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;age&quot;]</span><br></pre></td></tr></table></figure>
-<p>这也是最简单的使用方法了，也是我们平时项目中最常使用的方法了</p>
-<h4 id="KVC中使用keyPath"><a href="#KVC中使用keyPath" class="headerlink" title="KVC中使用keyPath"></a>KVC中使用keyPath</h4><p>但是当<code>Person</code>类里面有一个<code>student</code>类，里面有一个<code>height</code>属性，我们怎么赋值<code>height</code>属性呢，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Student *stu;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<p>我们能否这样写呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;stu.height&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;stu.height&quot;]</span><br></pre></td></tr></table></figure></p>
-<p>我们运行程序打印结果<br><img src="/2018/12/20/4-KVC/KVC4.png" title="KVC4"></p>
-<p>打印结果是<code>this class is not key value coding-compliant for the key stu.height.</code>,所以这个方法是不可以的，但是iOS为我们提供了另一个方法<code>KeyPath</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">p.stu = [[Student alloc]init];</span><br><span class="line">[p setValue:@180 forKeyPath:@&quot;stu.height&quot;];</span><br><span class="line">NSLog(@&quot;valueForKey:%@&quot;,[p valueForKeyPath:@&quot;stu.height&quot;]);</span><br><span class="line">NSLog(@&quot;stu.height:%f&quot;,p.stu.height);</span><br></pre></td></tr></table></figure></p>
-<p>打印结果<br><img src="/2018/12/20/4-KVC/KVC5.png" title="KVC5"></p>
-<p><code>keyPath</code>除了对当前对象的属性进行赋值外，还可以对其更“深层”的对象进行赋值。KVC进行多级访问时，直接类似于属性调用一样用点语法进行访问即可。</p>
-<h4 id="KVC之集合属性"><a href="#KVC之集合属性" class="headerlink" title="KVC之集合属性"></a>KVC之集合属性</h4><p>如果我们想要修改集合类型，我们该怎么办呢，不要着急，系统还是很友好的给我们提供了一些方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableSet *)mutableSetValueForKey:(NSString *)key</span><br><span class="line">- (NSMutableSet *)mutableSetValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKey:(NSString *)key </span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKeyPath:(NSString *)keyPath</span><br></pre></td></tr></table></figure></p>
-<p>简单使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">[[p mutableArrayValueForKey:@&quot;list&quot;] addObject:@&quot;test&quot;];</span><br><span class="line">NSLog(@&quot;mutableArrayValueForKey:%@&quot;,[p valueForKeyPath:@&quot;list&quot;]);</span><br><span class="line">NSLog(@&quot;%@&quot;,p.list);</span><br></pre></td></tr></table></figure></p>
-<p>关于<code>mutableArrayValueForKey:</code>的适用场景，网上一般说是在<code>KVO</code>中，因为<code>KVO的本质是系统监测到某个属性的内存地址或常量改变</code>时会添加上<code>- (void)willChangeValueForKey:(NSString *)key</code>和<code>- (void)didChangeValueForKey:(NSString *)key</code>方法来发送通知，但是如果直接改数组的话，内存地址并没有改变。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">_p = [[Person alloc]init];</span><br><span class="line">[_p addObserver:self forKeyPath:@&quot;list&quot; options:options context:nil];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">//    [_p.list addObject:@(arc4random()%255)];</span><br><span class="line">//    NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">//    NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</span><br><span class="line">NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSString *,id&gt; *)change context:(void *)context&#123;</span><br><span class="line">NSLog(@&quot;%@&quot;,change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)dealloc&#123;</span><br><span class="line">[_p removeObserver:self forKeyPath:@&quot;list&quot;]; //一定要在dealloc里面移除观察</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们分别用<code>[_p.list addObject:@(arc4random()%255)];</code>和<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>两个方法修改<code>list</code>内容，我们打印可知<code>[_p.list addObject:@(arc4random()%255)];</code>方法并没有改变<code>list</code>的内存地址，而使用<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>  ， <code>list</code>的内存地址改变了。</p>
-<h4 id="KVC之字典属性"><a href="#KVC之字典属性" class="headerlink" title="KVC之字典属性"></a>KVC之字典属性</h4><p>KVC里面还有两个关于NSDictionary的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">- (void)setValuesForKeysWithDictionary:(NSDictionary&lt;NSString *, id&gt; *)keyedValues;</span><br></pre></td></tr></table></figure></p>
-<p><code>dictionaryWithValuesForKeys:</code>是指输入一组key，返回这组key对应的属性，再组成一个字典<br><code>setValuesForKeysWithDictionary</code>是用来修改dic中对应key的属性</p>
-<p>这个属性最常用到的地方就是字典转模型<br>例如我们有一个<code>Student</code>类，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface Student : NSObject</span><br><span class="line">@property (nonatomic,assign) float height;</span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line">@property (nonatomic,strong) NSString *name;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<p>我们正常是怎么赋值呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu.age = 10;</span><br><span class="line">stu.name = @&quot;jack&quot;;</span><br><span class="line">stu.height = 180;</span><br></pre></td></tr></table></figure></p>
-<p>如果里面有100个属性呢，我们就需要写100遍<br>如果使用<code>setValuesForKeysWithDictionary</code>方法呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">//在进行网络请求的时候dic不需要我们手写，是后台返回的</span><br><span class="line">NSDictionary *dic = @&#123;@&quot;name&quot;:@&quot;jack&quot;,@&quot;height&quot;:@180,@&quot;age&quot;:@10&#125;;</span><br><span class="line">[stu setValuesForKeysWithDictionary:dic];</span><br></pre></td></tr></table></figure></p>
-<p>这样是不是简单了好多。</p>
-<h3 id="4、KVC异常处理"><a href="#4、KVC异常处理" class="headerlink" title="4、KVC异常处理"></a>4、KVC异常处理</h3><p>当根据KVC搜索规则，没有搜索到对应的key或者keyPath，则会调用对应的异常方法。异常方法的默认实现，在异常发生时会抛出一个<code>NSUndefinedKeyException</code>的异常，并且应用程序<code>Crash</code>。我们可以重写下面两个方法，根据业务需求合理的处理KVC导致的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
-<p>其中重写这两个方法，在<code>key</code>值不存在的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
-<p>重写这个方法，当value值为nil的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
-<h3 id="5、KVC的正确性验证"><a href="#5、KVC的正确性验证" class="headerlink" title="5、KVC的正确性验证"></a>5、KVC的正确性验证</h3><p>在调用KVC时可以先进行验证，验证通过下面两个方法进行，支持key和keyPath两种方式。验证方法默认实现返回YES，可以通过重写对应的方法修改验证逻辑。</p>
-<p>验证方法需要我们手动调用，并不会在进行KVC的过程中自动调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKeyPath:(NSString *)inKeyPath error:(out NSError **)outError;</span><br></pre></td></tr></table></figure></p>
-<p> 在validateValue方法的内部实现中，如果传入的value或key有问题，可以通过返回NO来表示错误，并设置NSError对象。</p>
-<p> 因为还需要我们手动调用校验，感觉用处不太大。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/3-KVO/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/20/3-KVO/" itemprop="url">3.KVO</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T15:25:59+08:00">
-                2018-12-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS底层</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>KVO（key value observing）</code>键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化</p>
-<p>KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code></p>
-<p>在学习实现原理之前先了解一下KVO常用的方法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">注册监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者在回调函数中会被回传</span><br><span class="line">监听的属性路径为keyPath支持点语法的嵌套</span><br><span class="line">监听类型为options支持按位或来监听多个事件类型</span><br><span class="line">监听上下文context主要用于在多个监听器对象监听相同keyPath时进行区分</span><br><span class="line">添加监听器只会保留监听器对象的地址，不会增加引用，也不会在对象释放后置空，因此需要自己持有监听对象的强引用，该参数也会在回调函数中回传</span><br><span class="line">*/</span><br><span class="line">- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">删除监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者，应与addObserver方法匹配</span><br><span class="line">监听的属性路径为keyPath，应与addObserver方法的keyPath匹配</span><br><span class="line">监听上下文context，应与addObserver方法的context匹配</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context API_AVAILABLE(macos(10.7), ios(5.0), watchos(2.0), tvos(9.0));</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">与上一个方法相同，只是少了context参数</span><br><span class="line">推荐使用上一个方法，该方法由于没有传递context可能会产生异常结果</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">监听器对象的监听回调方法</span><br><span class="line">keyPath即为监听的属性路径</span><br><span class="line">object为被监听的对象</span><br><span class="line">change保存被监听的值产生的变化</span><br><span class="line">context为监听上下文，由add方法回传</span><br><span class="line">*/</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context;</span><br></pre></td></tr></table></figure>
-<h3 id="KVO简单实现"><a href="#KVO简单实现" class="headerlink" title="KVO简单实现"></a>KVO简单实现</h3><p>我们创建一个<code>person</code>对象，然后在里面添加一个<code>age</code>属性，我们就来观察一下<code>age</code>属性<br><strong>person对象</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic,assign) NSInteger age;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
-<p><strong>简单实现</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;ViewController.h&quot;</span><br><span class="line">#import &quot;Person.h&quot;</span><br><span class="line">@interface ViewController ()</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Person *p1;</span><br><span class="line">@property (nonatomic,strong) Person *p2;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation ViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line"></span><br><span class="line">self.p1 = [[Person alloc]init];</span><br><span class="line">self.p2 = [[Person alloc]init];</span><br><span class="line">self.p1.age = 10;</span><br><span class="line">self.p2.age = 20;</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">self.p1.age = arc4random()%100;</span><br><span class="line">self.p2.age = arc4random()%100;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">[self.p1 removeObserver:self forKeyPath:@&quot;age&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">// 当监听对象的属性值发生改变时，就会调用</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;监听到%@的%@属性值改变了 - %@ - %@&quot;, object, keyPath, change, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上代码就是一个<code>KVO</code>的简单实现，但是我们有没有想过他的内部到底是怎样实现的呢，今天我们就来探究一下<code>KVO</code>的内部实现原理</p>
-<h3 id="KVO的内部实现"><a href="#KVO的内部实现" class="headerlink" title="KVO的内部实现"></a>KVO的内部实现</h3><p>探究一个对象底层实现最简单的办法就行打印一些对象信息，看看有什么改变</p>
-<p>我们在给<code>person1</code>添加监听之前分别打印<code>p1,p2</code>的类信息<br>代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br></pre></td></tr></table></figure></p>
-<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO1.png" title="KVO1"></p>
-<p>我们根据结果看到，在添加KVO观察者之后<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，虽然<code>p1</code>的类对象变成了<code>NSKVONotifying_Person</code>，但是我们在调用的时候感觉我们的<code>p1</code>的类对象还是<code>Person</code>，所以，我们可以猜测<code>KVO</code>会在运行时动态创建一个新类，将对象的<code>isa</code>指向新创建的类，<code>新类是原类的子类</code>，命名规则是<code>NSKVONotifying_xxx</code>的格式。KVO为了使其更像之前的类，还会将对象的<code>class实例方法重写</code>，使其更像原类</p>
-<p> <strong>查看P1内部方法是否改变</strong></p>
-<p>我们在发现<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，那我们也随便打印一下<code>Person</code>和<code>NSKVONotifying_Person</code>内部方法都变成了什么</p>
-<p>打印一下方法名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (void)printMethodNamesOfClass:(Class)cls</span><br><span class="line">&#123;</span><br><span class="line">unsigned int count;</span><br><span class="line">// 获得方法数组</span><br><span class="line">Method *methodList = class_copyMethodList(cls, &amp;count);</span><br><span class="line"></span><br><span class="line">// 存储方法名</span><br><span class="line">NSMutableString *methodNames = [NSMutableString string];</span><br><span class="line"></span><br><span class="line">// 遍历所有的方法</span><br><span class="line">for (int i = 0; i &lt; count; i++) &#123;</span><br><span class="line">// 获得方法</span><br><span class="line">Method method = methodList[i];</span><br><span class="line">// 获得方法名</span><br><span class="line">NSString *methodName = NSStringFromSelector(method_getName(method));</span><br><span class="line">// 拼接方法名</span><br><span class="line">[methodNames appendString:methodName];</span><br><span class="line">[methodNames appendString:@&quot;, &quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 释放</span><br><span class="line">free(methodList);</span><br><span class="line"></span><br><span class="line">// 打印方法名</span><br><span class="line">NSLog(@&quot;%@ %@&quot;, cls, methodNames);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>然后我们分别在KVO监听前后在分别打印一下<code>p1</code>的类对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br></pre></td></tr></table></figure></p>
-<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO2.png" title="KVO2"></p>
-<p>我们在来打印一些KVO监听前后<code>setAge</code>方法发生了什么改变，因为值得改变肯定是因为<code>set</code>方法导致的，所以我们打印一下<code>setAge</code>方法。<code>methodForSelector</code>可以打印方法地址，我们分别在KVO监听前后打印</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br></pre></td></tr></table></figure>
-<p>打印结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2018-09-04 10:41:05.823343+0800 KVO[21971:1023542] person1添加KVO监听之前 - 0x103f18540 0x103f18540</span><br><span class="line">2018-09-04 10:41:05.823702+0800 KVO[21971:1023542] person1添加KVO监听之后 - 0x10425ebf4 0x103f18540</span><br></pre></td></tr></table></figure></p>
-<p>我们可以利用lldb分别看一下具体的方法实现：</p>
-<img src="/2018/12/20/3-KVO/KVO5.png" title="KVO5">
-<p>根据以上总结，我们大概猜到在使用KVO前后对象的改变了<br><strong>未使用KVO监听的对象</strong></p>
-<img src="/2018/12/20/3-KVO/KVO3.png" title="KVO3">
-<p><strong>使用KVO监听的对象</strong><br><img src="/2018/12/20/3-KVO/KVO4.png" title="KVO4"></p>
-<ul>
-<li>1、重写class方法是为了我们调用它的时候返回跟重写继承类之前同样的内容。KVO底层交换了 NSKVONotifying_Person 的 class 方法，让其返回 Person</li>
-<li>2、重写setter方法:在新的类中会重写对应的set方法，是为了在set方法中增加另外两个方法的调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (void)willChangeValueForKey:(NSString *)key</span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>在didChangeValueForKey:方法再调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath</span><br><span class="line">ofObject:(id)object</span><br><span class="line">change:(NSDictionary *)change</span><br><span class="line">context:(void *)context</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li>3、重写dealloc方法，销毁新生成的NSKVONotifying_类。</li>
-<li>4、重写_isKVOA方法，这个私有方法估计可能是用来标示该类是一个 KVO 机制声称的类。</li>
-</ul>
-<h3 id="NSSetLongLongValueAndNotify"><a href="#NSSetLongLongValueAndNotify" class="headerlink" title="_NSSetLongLongValueAndNotify"></a>_NSSetLongLongValueAndNotify</h3><p>在添加KVO监听方法以后<code>setAge</code>方法变成了<code>_NSSetLongLongValueAndNotify</code>,所以我们可以大概猜测动态监听方法主要就是在这里面实现的</p>
-<p>我们可以在终端使用<code>nm -a /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation | grep ValueAndNotify</code>命令来查看<code>NSSet*ValueAndNotify</code>的类型<br><img src="/2018/12/20/3-KVO/KVO6.png" title="KVO6"></p>
-<p>我们可以在<code>Person</code>类中重写<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>,来猜测一下<code>_NSSetLongLongValueAndNotify</code>的内部实现</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (void)setAge:(NSInteger)age&#123;</span><br><span class="line">_age = age;</span><br><span class="line">NSLog(@&quot;调用set方法&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (void)willChangeValueForKey:(NSString *)key&#123;</span><br><span class="line">[super willChangeValueForKey:key];</span><br><span class="line">NSLog(@&quot;willChangeValueForKey&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - begin&quot;);</span><br><span class="line"></span><br><span class="line">[super didChangeValueForKey:key];</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - end&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<img src="/2018/12/20/3-KVO/KVO7.png" title="KVO7">
-<p>根据打印结果我们可以推断<code>_NSSetLongLongValueAndNotify</code>内部实现为</p>
-<ul>
-<li>1、调用<code>willChangeValueForKey</code>方法</li>
-<li>2、调用<code>setAge</code>方法</li>
-<li>3、调用’didChangeValueForKey’方法</li>
-<li>4、’didChangeValueForKey’方法内部调用<code>oberser</code>的<code>observeValueForKeyPath:ofObject:change:context:</code>方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 伪代码</span><br><span class="line">void _NSSetIntValueAndNotify()</span><br><span class="line">&#123;</span><br><span class="line">[self willChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">[super setAge:age];</span><br><span class="line">[self didChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br><span class="line">&#123;</span><br><span class="line">// 通知监听器，某某属性值发生了改变</span><br><span class="line">[oberser observeValueForKeyPath:key ofObject:self change:nil context:nil];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h3 id="面试题"><a href="#面试题" class="headerlink" title="面试题"></a>面试题</h3><p><strong>1、iOS用什么方式实现对一个对象的KVO（KVO的本质是什么？）</strong></p>
-<ul>
-<li>1、利用RuntimeAPI动态生成一个子类<code>NSKVONotifying_XXX</code>,并且让instance对象的isa指向这个全新的子类<code>NSKVONotifying_XXX</code></li>
-<li>2、当修改对象的属性时，会在子类<code>NSKVONotifying_XXX</code>调用Foundation的<code>_NSSetXXXValueAndNotify</code>函数</li>
-<li>3、在<code>_NSSetXXXValueAndNotify</code>函数中一次调用<ul>
-<li>1、willChangeValueForKey</li>
-<li>2、父类原来的setter</li>
-<li>3、didChangeValueForKey，didChangeValueForKey：内部会出发监听器（Observer）的监听方法( observeValueForKeyPath:ofObject:change:context:）</li>
-</ul>
-</li>
-</ul>
-<p><strong>2、如何手动触发KVO方法</strong><br>手动调用<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>方法</p>
-<p>键值观察通知依赖于 NSObject 的两个方法: <code>willChangeValueForKey:</code> 和 <code>didChangeValueForKey</code>。在一个被观察属性发生改变之前， <code>willChangeValueForKey:</code> 一定会被调用，这就<br>会记录旧的值。而当改变发生后， <code>didChangeValueForKey</code> 会被调用，继而 <code>observeValueForKey:ofObject:change:context:</code>也会被调用。如果可以手动实现这些调用，就可以实现“手动触发”了</p>
-<p>有人可能会问只调用<code>didChangeValueForKey</code>方法可以触发KVO方法，其实是不能的，因为<code>willChangeValueForKey:</code> 记录旧的值，如果不记录旧的值，那就没有改变一说了</p>
-<p><strong>3、直接修改成员变量会触发KVO吗</strong><br>不会触发KVO，因为<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code>，直接修改成员变量，是在内存中修改的，不走<code>set</code>方法</p>
-<p><strong>4、不移除KVO监听，会发生什么</strong></p>
-<ul>
-<li>不移除会造成内存泄漏</li>
-<li>但是多次重复移除会崩溃。系统为了实现KVO，为NSObject添加了一个名为NSKeyValueObserverRegistration的Category，KVO的add和remove的实现都在里面。在移除的时候，系统会判断当前KVO的key是否已经被移除，如果已经被移除，则主动抛出一个NSException的异常</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/2-OC对象的分类/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/20/2-OC对象的分类/" itemprop="url">2.OC对象的分类</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T14:22:57+08:00">
-                2018-12-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS底层</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>OC对象主要可以分为3种</p>
-<ul>
-<li>1、instance对象（实例对象）：instance实例对象就是通过alloc出来的对象，每次调用alloc都会产生新的instance对象</li>
-<li>2、class对象（类对象）：每个类的内存中有且只有一个类对象</li>
-<li>3、meta-class对象（元类对象）：每个类的内存中有且只有一个元类对象</li>
-</ul>
-<p>实例对象的存储信息</p>
-<ul>
-<li>isa指针</li>
-<li>其他成员变量</li>
-</ul>
-<p>类对象的存储信息<br>-isa指针</p>
-<ul>
-<li>superClass指针</li>
-<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
-</ul>
-<p>元类的存储信息</p>
-<ul>
-<li>isa指针</li>
-<li>superClass指针</li>
-<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
-</ul>
-<p><code>元类和类的存储结构是一样的，但是用途不一样</code><br><img src="/2018/12/20/2-OC对象的分类/OC对象的分类1.png" title="OOC对象的分类1"></p>
-<ul>
-<li>instance的isa指向class，当调用<code>对象方法</code>时，通过instance的isa找到class，最后找到对象方法的实现进行调用</li>
-<li>class的isa指向meta-class，当调用<code>类方法</code>时，通过class当isa找到meta-class，最后找到<code>类方法</code></li>
-</ul>
-<h3 id="总览图"><a href="#总览图" class="headerlink" title="总览图"></a>总览图</h3><img src="/2018/12/20/2-OC对象的分类/OC对象的分类2.png" title="OOC对象的分类2">
-<ul>
-<li>1、instance的isa指向class</li>
-<li>2、class的isa指向meta-class</li>
-<li>3、meta-class的isa指向基类的meta-class</li>
-<li>4、class的superclass指向父类的class，如果没有父类，superclass指向nil</li>
-<li>5、meta-class的superclass指向父类的meta-class，基类的meta-class的superclass指向基类的class</li>
-<li>6、instance的调用轨迹：isa找class，方法不存在，就通过superclass找父类</li>
-<li>7、class调用类方法的轨迹：isa找到meta-class，方法不存在，就通过superclass找父类</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/1-一个NSObject对象占用多少内存/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/20/1-一个NSObject对象占用多少内存/" itemprop="url">1.一个NSObject对象占用多少内存</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T09:32:47+08:00">
-                2018-12-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS底层</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>我们平时所编写的Object-C代码，底层实现都是C/C++代码，</p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Object-C代码底层实现.png" title="Object-C代码底层实现">
-<p> 所有OC的面向对象都是基于C/C++的数据结构实现的<br> <code>思考:OC对象主要是基于C/C++的什么数据结构实现的呢？？？</code></p>
-<p> 想要了解OC对象主要是基于C/C++的什么数据结构实现的，我们首先要做的就是将Object-C代码转化为C/C++代码，这样我们才能清楚的看清是怎么实现的</p>
-<p> 然后我们打开终端，命令行cd到文件目录，然后输入：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -rewrite-objc main.m</span><br></pre></td></tr></table></figure></p>
-<p> 命令可以将main.m编译成C++的代码，改成不同的文件名，就会生成不同的c++代码<br> 这时就生成了main.cpp这个c++文件，打开文件代码查看main.cpp最底下的main函数</p>
-<p> 但是不同平台支持的代码肯定是不一样的，像平台有Windows、mac、iOS<br>，架构有模拟器（i386）、32bit（armv7）、64bit（arm64），我们使用iOS，它的架构现在基本上都是64bit（arm64）</p>
- <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc OC源文件  -o  输出的CPP文件</span><br><span class="line">如果需要链接其他框架，使用-framework参数。比如-framework UIKit</span><br></pre></td></tr></table></figure>
-<p>在终端输入命令以后，我们会生成一个main.cpp文件，打开main.cpp文件，我们把main.cpp拉到最下面，会看到这样一段代码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     </span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>这一段代码就是我们OC代码中的main函数的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
-<p>这时我们在main函数写入这一段代码，然后点进去，查看代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSObject *obj = [[NSObject alloc]init];</span><br></pre></td></tr></table></figure></p>
-<p>点击NSObject进入内部，可以看到NSObject底层实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p> 我们用NSObject_IMPL查找在c++文件中具体的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p> 我们再一次执行命令<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc mian.m</span><br></pre></td></tr></table></figure></p>
-<p> 生成的C++代码为<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     NSObject *obj = ((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)objc_getClass(&quot;NSObject&quot;), sel_registerName(&quot;alloc&quot;)), sel_registerName(&quot;init&quot;));</span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>有两个方法可以打印内存大小<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;objc/runtime.h&gt;</span><br><span class="line">#import &lt;malloc/malloc.h&gt;</span><br><span class="line">//获取NSObject实例对象的成员变量所占用的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,class_getInstanceSize([NSObject class]));</span><br><span class="line"> </span><br><span class="line">//获得obj指针所指向内存的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,malloc((__bridge const void*)obj)));</span><br></pre></td></tr></table></figure></p>
-<p>打印结果<br><img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存.png" title="NSObject对象内存"></p>
-<h3 id="一个OC对象在内存中是怎样布局的呢"><a href="#一个OC对象在内存中是怎样布局的呢" class="headerlink" title="一个OC对象在内存中是怎样布局的呢"></a>一个OC对象在内存中是怎样布局的呢</h3><p>我们在c++文件中找到NSObject的实现<br>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>c++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>我们知道一个指针式8个字节，但是NSObject对象打印16个字节，他们是怎么布局的呢</p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存地址.png" title="NSObject对象内存地址">
-<p>我们可以根据内存地址实时查看内存分配情况Debug -&gt; Debug Workfllow -&gt; View Memory （Shift + Command + M）</p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据.png" title="查看内存数据">
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据1.png" title="查看内存数据1">
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据2.png" title="查看内存数据2">
-<p>我们也可以直接使用<code>LLDB命令</code>来查看内存地址<br><strong>常用LLDB命令</strong></p>
-<ul>
-<li>print、p：打印</li>
-<li>po:打印对象</li>
-<li>读取内存<ul>
-<li>memory read/数量格式字节数 内存地址</li>
-<li>x/（格式：x是16进制，f是浮点，d是10进制；字节大小：byte 1字节，h：half word 2字节，w：word 4字节，g：giant word 8字节）</li>
-</ul>
-</li>
-<li>修改内存中的值（memory write 内存地址 数值memory write 0x0000010 10）</li>
-</ul>
-<p><strong>问题1</strong>：假设我创建一个<code>Student</code>类，里面有<code>age</code>，<code>number</code>两个属性，那么它的内存是多大呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu-&gt;_number = 4;</span><br><span class="line">stu-&gt;_age = 5;</span><br></pre></td></tr></table></figure></p>
-<p>我们先执行命令，查看一下c++源码</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>我们在知道结果之前大概猜猜内存是多大呢？16、24、32…</p>
-<p>答案是16个字节。</p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印.png" title="Student内存打印">
-<p>我们用<code>LLDB命令</code>打印一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a9 11 00 00 01 80 1d 00 04 00 00 00 05 00 00 00</span><br></pre></td></tr></table></figure></p>
-<p> 为什么会是<code>04 00 00 00</code>和<code>05 00 00 00</code>呢，而不是<code>00 00 00 04</code>和<code>00 00 00 o5</code>,这个就要考虑<a href="https://baike.baidu.com/item/大小端模式/6750542?fromtitle=大端小端&amp;fromid=15925891&amp;fr=aladdin" target="_blank" rel="noopener">大端小端</a></p>
-<p>但是为什么会是16个字节呢？因为int类型占用4个字节，两个int类型8个字节，一个isa占8个字节，因为刚刚占满16个字节，对象就没在开辟新的空间</p>
-<p>如果多一个height会占用几个字节呢？</p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印2">
-<p>答案是占用32个字节。</p>
-<p>其实这又要提到一个新的知识点了<code>内存对齐</code>,我们知道OC对象就是C++结构体，<code>而结构体的大小必须是最大成员大小的倍数</code>，当在多了一个<code>height</code>以后，内存不够用了，然后就需要扩展了。</p>
-<p><strong>如果是这样呢，占用内存是多少</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject&#123;</span><br><span class="line">@public</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Person</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Student : Person&#123;</span><br><span class="line">@public</span><br><span class="line">int _height;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Student</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
-<p><code>Student</code>继承自<code>Person</code></p>
-<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印">
-<p>我们生成C++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct Person_IMPL Person_IVARS;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct Person_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>整理一下就是这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/11/缘分/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/11/缘分/" itemprop="url">缘分</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T10:05:25+08:00">
-                2018-12-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T18:11:04+08:00">
+                2018-12-21
               </time>
             
 
@@ -1114,300 +345,7 @@
       
         
           
-            <p>什么是缘分？<br>人与人之间的相遇与相知，既是偶然，也是必然。这种看不见的命数，这种种琢磨不透的因由，理不清，剪不断，就是缘分。</p>
-<p>缘分，是一种相遇。<br>在茫茫人海中，没有早一步，也没有晚一步，就这么遇到了彼此，这就是缘分。<br>人生中所有的遇见，上至父母下至路人，都是一种缘分。有的缘分很浅，只是眼神交汇最后擦肩而过；有的缘分很深，还会有长久的相知相伴；有的缘分很美好，会带给你快乐和幸福；有的缘分很痛苦，让你经受挫折和心碎。<br>爱你的人，让你温暖，伤你的人，让你成长，路过的人，丰富了你的生命。遇到什么，不是我们能决定的，但所有的缘分，都有意义。</p>
-<p>缘分，也是一种重逢。<br>在漫长的人生路上，即便被时间冲淡了，被生活冲散了，最后还能重聚，这就是缘分。<br>人生最美是相遇，最难得是重逢。同窗苦读的同学，多年不见的老友，一直放在心里的恋人，再次相见，心中总是涌动着万千感慨，轻轻道一声“好久不见”。也曾有过矛盾，发生过不快，如今都被时间沉淀，留下的都是美好的回忆。<br>穿越重重人潮和漫漫时光，再见故人，是人生一大幸事。</p>
-<p>缘分，更是一种珍惜。<br>一辈子，最难预料的是遇见，不知道哪一眼就是开始；最难揣测的是离别，不知道哪一面，就是后会无期。<br>我们只是尘世间一粒微小的尘埃，随缘飞舞，又随缘落去。缘分来的时候，别回避，人生苦短，错过一时也许就错过了一世。缘分走的时候，别强求，不是你的，再怎么不放手也迟早会溜走。<br>其实，所有的相遇只是个开始，唯有珍惜才能长久。不在乎的人，早晚走散，不珍惜的缘，注定没有好结果。<br>多回头看看，还有多少人一直留在身边；记得用心数数，还有几份情坚持着不离散。<br>缘分没有好坏，只有珍惜与否。最美好不过，用随缘的心态，珍惜有缘之人，过好这缘的一生。</p>
-<p>摘自：<a href="https://baijiahao.baidu.com/s?id=1596416058572018324&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1596416058572018324&amp;wfr=spider&amp;for=pc</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/11/错误/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/11/错误/" itemprop="url">错误</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T09:16:20+08:00">
-                2018-12-11
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
-                    <span itemprop="name">心灵鸡汤</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="错误"><a href="#错误" class="headerlink" title="错误"></a>错误</h3><p>郑愁予</p>
-<p>我打江南走过<br>那等在季节里的容颜如莲花的开落<br>东风不来，三月的柳絮不飞<br>你的心如小小的寂寞的城<br>恰若青石的街道向晚<br>跫音不响，三月的春帷不揭<br>你底心是小小的窗扉紧掩<br>我达达的马蹄声是美丽的错误<br>我不是归人，是个过客……<br><img src="/2018/12/11/错误/poem_mistake.JPEG" title="独依望江楼，过尽千帆皆不是"></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/07/天真的预言/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/07/天真的预言/" itemprop="url">天真的预言</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-07T16:42:46+08:00">
-                2018-12-07
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
-                    <span itemprop="name">心灵鸡汤</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h4 id="Auguries-of-Innocence"><a href="#Auguries-of-Innocence" class="headerlink" title="Auguries of Innocence"></a>Auguries of Innocence</h4><p>To see a world in a grain of sand<br>And a heaven in a wild flower,<br>Hold infinity in the palm of your hand<br>And eternity in an hour.</p>
-<h5 id="经典译文"><a href="#经典译文" class="headerlink" title="经典译文:"></a>经典译文:</h5><h5 id="天真的预言"><a href="#天真的预言" class="headerlink" title="天真的预言"></a>天真的预言</h5><hr>
-<p>一沙一世界，<br>一花一天堂。<br>双手握无限，<br>刹那是永恒。<br>一沙一世界，<br>一花一天堂，<br>一树一菩提，<br>一叶一如来。<br>天真的预言，<br>参悟千年的偈语。<br>一粒沙里见世界，<br>一朵花里见天堂，<br>手掌里盛住无限，<br>一刹那便是永劫。<br>——丰子恺</p>
-<hr>
-<p>一颗沙里看出一个世界，<br>一朵野花里一座天堂，<br>把无限放在你的手掌上，<br>永恒在一刹那里收藏。<br>——梁宗岱 译</p>
+            <p>之前有个朋友，曾经告诉我，要好好追求自己的幸福。–《妖精的尾巴》乌璐</p>
 <hr>
 
           
@@ -1457,7 +395,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/06/iOS签名机制04/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/7-RunLoop实现原理/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="NSLegend">
@@ -1476,7 +414,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/12/06/iOS签名机制04/" itemprop="url">iOS签名机制04</a></h1>
+                <a class="post-title-link" href="/2018/12/21/7-RunLoop实现原理/" itemprop="url">7.RunLoop实现原理</a></h1>
         
 
         <div class="post-meta">
@@ -1488,8 +426,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-06T10:23:10+08:00">
-                2018-12-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:31:05+08:00">
+                2018-12-21
               </time>
             
 
@@ -1498,28 +436,6 @@
             
           </span>
 
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1550,17 +466,7 @@
       
         
           
-            <h4 id="数字签名"><a href="#数字签名" class="headerlink" title="数字签名"></a>数字签名</h4><ul>
-<li>生成签名<ul>
-<li>由消息的发送者完成，通过“签名密码”生成</li>
-</ul>
-</li>
-<li>验证签名<ul>
-<li>由消息的接收者完成，通过“验证密钥”验证</li>
-</ul>
-</li>
-</ul>
-
+            
           
         
       
@@ -1608,7 +514,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/06/心灵鸡汤02/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-8-RunTime实现原理/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="NSLegend">
@@ -1627,7 +533,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/12/06/心灵鸡汤02/" itemprop="url">心灵鸡汤02</a></h1>
+                <a class="post-title-link" href="/2018/12/21/8-8-RunTime实现原理/" itemprop="url">8.8 RunTime实现原理</a></h1>
         
 
         <div class="post-meta">
@@ -1639,8 +545,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-06T08:43:16+08:00">
-                2018-12-06
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:42+08:00">
+                2018-12-21
               </time>
             
 
@@ -1649,28 +555,6 @@
             
           </span>
 
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
-                    <span itemprop="name">心灵鸡汤</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1701,27 +585,7 @@
       
         
           
-            <p>当你的才华还撑不起你的野心的时候，你就应该静下心来学习；当你的能力还驾驭不了你的目标时，就应该沉下心来，历练；梦想，不是浮躁，而是沉淀和积累，只有拼出来的美丽，没有等出来的辉煌，机会永远是留给最渴望的那个人，学会与内心深处的你对话，问问自己，想要怎样的人生，静心学习，耐心沉淀，送给自己，共勉。</p>
-<hr>
-<p>Make sure that you won’t stop<br>你一定不要停下来<br>Be the one that you wanna be.<br>成为你想成为的人。</p>
-<hr>
-<p>有了想法就出发吧，不用等到万事俱备，也许路上走着走着，你想要的东西就都有了。</p>
-<hr>
-<p>【如何度过二十多岁这段又穷又迷茫的岁月？】如果你把迷茫归结为年龄带来的，指望着混过二十岁这几年来解决问题，那么恭喜你，等你三十岁了，也同样会迷茫的。归根结底，你不去想办法解决，迷茫就会一直存在。对于迷茫，你得靠闯，而不是等。</p>
-<hr>
-<p>每一个不曾起舞的日子，</p>
-<p>都是对生命的辜负。</p>
-<p>——尼采</p>
-<hr>
-<p>对待生命你不妨大胆一点，</p>
-<p>因为我们始终要失去它。</p>
-<p>——尼采</p>
-<hr>
-<p>在我们的生命里，特殊的机会并不多，如果错过了，就可能再也遇不到了。一定要珍惜每一次机会。</p>
-<hr>
-<p>与其羡慕别人，不如做好自己，肤浅的羡慕，无聊的攀比，笨拙的效仿，只会让自己整天活在他人的影子里面。</p>
-<hr>
-
+            
           
         
       
@@ -1769,7 +633,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/05/iOS签名机制03/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-7-RunTime实现原理/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="NSLegend">
@@ -1788,7 +652,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/12/05/iOS签名机制03/" itemprop="url">iOS签名机制03</a></h1>
+                <a class="post-title-link" href="/2018/12/21/8-7-RunTime实现原理/" itemprop="url">8.7 RunTime实现原理</a></h1>
         
 
         <div class="post-meta">
@@ -1800,8 +664,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-05T15:15:30+08:00">
-                2018-12-05
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:33+08:00">
+                2018-12-21
               </time>
             
 
@@ -1810,28 +674,6 @@
             
           </span>
 
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -1862,41 +704,721 @@
       
         
           
-            <h4 id="混合密码系统"><a href="#混合密码系统" class="headerlink" title="混合密码系统"></a>混合密码系统</h4><p>对称密码的缺点：不能很好的解决密钥配送问题</p>
-<p>公钥密码的缺点：加密解密速度比较慢</p>
-<p>混合密码系统，是将对称密码和公钥密码的优势相结合的方法;<br>解决了公钥密码速度慢的问题;<br>并通过公钥密码解决了对称密码的密钥配送问题.</p>
-<p>网络上密码通信所用的SSL/TLS都运用了混合密码系统</p>
-<p>混合密码——加密:</p>
-<ul>
-<li>会话密钥</li>
-<li>为本次通信随机生成的临时密钥</li>
-<li>作为对称密码的密钥，用于加密消息，提高速度</li>
-</ul>
-<p>加密步骤（发送消息）:</p>
-<ul>
-<li>首先，消息发送者要拥有消息接收者的公钥生成会话密钥，作为对称密码的密钥，加密消息。</li>
-<li>用消息接收者的公钥，加密会话密钥。</li>
-<li>将前2步生成的加密结果，一并发给消息接收者</li>
-</ul>
-<p>发送出去的内容包括:</p>
-<ul>
-<li>用会话密钥加密的消息（加密方法：对称密码）</li>
-<li>用公钥加密的会话密钥（加密方法：公钥密码）</li>
-</ul>
-<p>解密步骤（收到消息）:</p>
-<ul>
-<li>消息接收者用自己的私钥解密会出会话密钥</li>
-<li>再用第一步解密出来的会话密钥，解密消息</li>
-</ul>
-<p>混合密码—加密解密流程</p>
-<p>Alice &gt;&gt;&gt; Bob<br>发送过程，加密过程:<br>1.Bob先生成一对公钥、私钥<br>2.Bob把公钥共享给Alice<br>3.Alice随机生成一个会话密钥（临时密钥）<br>4.Alice用会话密钥加密需要发送的消息（使用的是对称密码加密）<br>5.Alice用Bob的公钥加密会话密钥（使用的是公钥密码加密，也就是非对称加密）<br>6.Alice把第4、5步加密的结果，一并发送给Bob</p>
-<p>接收过程，解密过程:<br> 1.Bob利用自己的私钥解密会话密钥（使用的是公钥密码解密，也就是非对称密码解密）<br> 2.Bob利用会话密钥解密发送过来的会话（使用的是对称密码解密）</p>
-<ul>
-<li>SHA-1，产生168bit的散列值，目前已经不安全</li>
-<li>SHA-256、SHA-384、SHA-512，散列值长度分别是256、384、512</li>
-<li>SHA-3全新标准<br>在公钥密码中，任何人都可以使用公钥进行加密<br>在数字签名中，任何人都可以使用公钥验证签名</li>
-</ul>
+            
+          
+        
+      
+    </div>
+    
+    
+    
 
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-6-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-6-RunTime实现原理/" itemprop="url">8.6 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:24+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-5-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-5-RunTime实现原理/" itemprop="url">8.5 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:16+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-4-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-4-RunTime实现原理/" itemprop="url">8.4 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:08+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-3-RunTime实现原理/" itemprop="url">8.3 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:30:00+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-2-RunTime实现原理/" itemprop="url">8.2 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:29:20+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/21/8-1-RunTime实现原理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/21/8-1-RunTime实现原理/" itemprop="url">8.1 RunTime实现原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-21T10:29:11+08:00">
+                2018-12-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
           
         
       
@@ -1935,7 +1457,7 @@
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1983,7 +1505,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-count">35</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
