@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,20 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="Class&amp;amp;SuperClass 有人可能遇到过这个问题，请问一下打印结果是什么 12345NSLog(@&amp;quot;[self class] = %@&amp;quot;,[self class]);NSLog(@&amp;quot;[super class] = %@&amp;quot;,[super class]);NSLog(@&amp;quot;============&amp;quot;);NSLog(@&amp;quot;">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="8.5 RunTime实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/8-5-RunTime实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="Class&amp;amp;SuperClass 有人可能遇到过这个问题，请问一下打印结果是什么 12345NSLog(@&amp;quot;[self class] = %@&amp;quot;,[self class]);NSLog(@&amp;quot;[super class] = %@&amp;quot;,[super class]);NSLog(@&amp;quot;============&amp;quot;);NSLog(@&amp;quot;">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:30:16.912Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-5-RunTime实现原理/class.png">
+<meta property="og:updated_time" content="2018-12-24T09:31:01.003Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="8.5 RunTime实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="Class&amp;amp;SuperClass 有人可能遇到过这个问题，请问一下打印结果是什么 12345NSLog(@&amp;quot;[self class] = %@&amp;quot;,[self class]);NSLog(@&amp;quot;[super class] = %@&amp;quot;,[super class]);NSLog(@&amp;quot;============&amp;quot;);NSLog(@&amp;quot;">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/8-5-RunTime实现原理/class.png">
 
 
 
@@ -292,6 +295,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +344,28 @@
       
 
       
-        
+        <h2 id="Class-amp-SuperClass"><a href="#Class-amp-SuperClass" class="headerlink" title="Class&amp;SuperClass"></a>Class&amp;SuperClass</h2><p> 有人可能遇到过这个问题，请问一下打印结果是什么<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;[self class] = %@&quot;,[self class]);</span><br><span class="line">NSLog(@&quot;[super class] = %@&quot;,[super class]);</span><br><span class="line">NSLog(@&quot;============&quot;);</span><br><span class="line">NSLog(@&quot;[self superclass] = %@&quot;,[self superclass]);</span><br><span class="line">NSLog(@&quot;[super superclass] = %@&quot;,[super superclass]);</span><br></pre></td></tr></table></figure></p>
+ <img src="/2018/12/21/8-5-RunTime实现原理/class.png" title="class">
+<p> 要想知道为什么会出现这种打印结果，我们首先需要知道<code>self</code>、<code>super</code>、<code>class</code>、<code>superclass</code>、都代表了什么意思</p>
+<p> 我们还是我们还是在源码中查找一下,我们搜索<code>NSObject</code>，然后在<code>.mm</code>文件中找到了一些实现<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">+ (id)self &#123;</span><br><span class="line">return (id)self;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (id)self &#123;</span><br><span class="line">return self;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (Class)class &#123;</span><br><span class="line">return self;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (Class)class &#123;</span><br><span class="line">return object_getClass(self);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (Class)superclass &#123;</span><br><span class="line">return self-&gt;superclass;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (Class)superclass &#123;</span><br><span class="line">return [self class]-&gt;superclass;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>1、<code>+self</code>和<code>-self</code>都是返回的<code>self</code></li>
+<li>2、<code>+Class</code>返回的是<code>self</code>；<code>-Class</code>调用的是<code>object_getClass(self)</code>，实例对象返回类对象，类对象返回原类对象</li>
+<li>3、<code>+superclass</code>如果是实例对象，返回实例对象的父类，如果是类对象返回类对象的父类；<code>-superclass</code>返回类对象的父类</li>
+</ul>
+<p> <code>object_getClass</code>的实现为<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Class object_getClass(id obj)</span><br><span class="line">&#123;</span><br><span class="line">if (obj) return obj-&gt;getIsa();</span><br><span class="line">else return Nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 但是我们好像没有找到<code>super</code>，这时候我们可以重新写一个继承自<code>person</code>的<code>student</code>类，然后重写里面的方法，然后转化为c++，我们来查看里面的实现<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">((void (*)(__rw_objc_super *, SEL))(void *)objc_msgSendSuper)((__rw_objc_super)&#123;(id)self, (id)class_getSuperclass(objc_getClass(&quot;Student&quot;))&#125;, sel_registerName(&quot;test&quot;));</span><br></pre></td></tr></table></figure></p>
+<p> 其中<code>__rw_objc_super</code>为结构体<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct __rw_objc_super &#123; </span><br><span class="line">struct objc_object *object; </span><br><span class="line">struct objc_object *superClass; </span><br><span class="line">__rw_objc_super(struct objc_object *o, struct objc_object *s) : object(o), superClass(s) &#123;&#125; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p> 我们可以把上面代码转化为<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct objc_super &#123;</span><br><span class="line">__unsafe_unretained _Nonnull id receiver; // 消息接收者</span><br><span class="line">__unsafe_unretained _Nonnull Class super_class; // 消息接收者的父类</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct objc_super arg = &#123;self, [MJPerson class]&#125;;</span><br><span class="line"></span><br><span class="line">objc_msgSendSuper(arg, @selector(run));</span><br></pre></td></tr></table></figure></p>
+<p> 我们在源码中查找<code>objc_msgSendSuper</code>，其中有句解释是这样的<code>message and the superclass at which to start searching for the method implementation.</code>，翻译过来就是<code>消息从父类中开始搜索</code></p>
+<p> 我们知道<code>class</code>其实是<code>NSObject</code>中实现的，<code>[self class]</code>只不过是从子类中开始查找，<code>[super class]</code>是从父类中开始查找，她们都是调用的<code>- (Class)class</code>，<code>-class</code>实例对象返回类对象，类对象返回原类对象。<code>[self class]</code>和<code>[super class]</code>的消息接受者都是<code>self</code>。所以<code>[self class]</code>和<code>[super class]</code>打印的是相同的。</p>
+<p> <strong>总结</strong></p>
+<ul>
+<li>1、<code>self</code>和<code>super</code>的消息接受者都是<code>self</code>，只不过他们查找方法的开始地方不一样,<code>self</code>是从自己开始查找方法，<code>super</code>是从父类中开始查找方法</li>
+<li>2、<code>-class</code>实例对象返回类对象，类对象返回原类对象；<code>-superclass</code>返回类对象的父类</li>
+<li>3、<code>+Class</code>返回的是<code>self</code>；<code>+superclass</code>如果是实例对象，返回实例对象的父类，如果是类对象返回类对象的父类；</li>
+</ul>
+
       
     </div>
     
@@ -333,6 +379,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +459,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -425,7 +486,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -487,6 +548,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Class-amp-SuperClass"><span class="nav-number">1.</span> <span class="nav-text">Class&amp;SuperClass</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -500,7 +577,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,20 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="运行时1、isa解析isa指针我们在研究OC对象的时候已经知道了，实例对象的isa指向类对象，类对象的isa指向元类对象。其实这样说还是有一点不对的，应该说在arm64架构之前，isa就是一个普通的指针，存储着Class、 Meta-Class 对象的内存地址；但是从arm64之后，对isa进行了优化，变成了一个共用体（union）结构，还使用位域来存放跟多的信息。 在这里下载runtime源码，">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="8.1 RunTime实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/8-1-RunTime实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="运行时1、isa解析isa指针我们在研究OC对象的时候已经知道了，实例对象的isa指向类对象，类对象的isa指向元类对象。其实这样说还是有一点不对的，应该说在arm64架构之前，isa就是一个普通的指针，存储着Class、 Meta-Class 对象的内存地址；但是从arm64之后，对isa进行了优化，变成了一个共用体（union）结构，还使用位域来存放跟多的信息。 在这里下载runtime源码，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:29:11.876Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-1-RunTime实现原理/isa.png">
+<meta property="og:updated_time" content="2018-12-24T08:17:41.507Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="8.1 RunTime实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="运行时1、isa解析isa指针我们在研究OC对象的时候已经知道了，实例对象的isa指向类对象，类对象的isa指向元类对象。其实这样说还是有一点不对的，应该说在arm64架构之前，isa就是一个普通的指针，存储着Class、 Meta-Class 对象的内存地址；但是从arm64之后，对isa进行了优化，变成了一个共用体（union）结构，还使用位域来存放跟多的信息。 在这里下载runtime源码，">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/8-1-RunTime实现原理/isa.png">
 
 
 
@@ -292,6 +295,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +344,84 @@
       
 
       
-        
+        <h2 id="运行时"><a href="#运行时" class="headerlink" title="运行时"></a>运行时</h2><h2 id="1、isa解析"><a href="#1、isa解析" class="headerlink" title="1、isa解析"></a>1、isa解析</h2><h4 id="isa指针"><a href="#isa指针" class="headerlink" title="isa指针"></a>isa指针</h4><p>我们在研究OC对象的时候已经知道了，实例对象的<code>isa</code>指向类对象，类对象的<code>isa</code>指向元类对象。其实这样说还是有一点不对的，应该说在<code>arm64架构</code>之前，isa就是一个普通的指针，存储着<code>Class</code>、 <code>Meta-Class</code> 对象的内存地址；但是从<code>arm64</code>之后，对<code>isa</code>进行了优化，变成了一个<code>共用体（union）</code>结构，还使用<code>位域</code>来存放跟多的信息。</p>
+<p>在<a href="https://opensource.apple.com/tarballs/objc4/" target="_blank" rel="noopener">这里</a>下载runtime源码，然后查找<code>struct objc_object</code>里面的<code>isa</code>,这里我们只研究arm64架构<code>isa</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">struct &#123;</span><br><span class="line">uintptr_t nonpointer        : 1;</span><br><span class="line">uintptr_t has_assoc         : 1;</span><br><span class="line">uintptr_t has_cxx_dtor      : 1;</span><br><span class="line">uintptr_t shiftcls          : 33; // MACH_VM_MAX_ADDRESS 0x1000000000</span><br><span class="line">uintptr_t magic             : 6;</span><br><span class="line">uintptr_t weakly_referenced : 1;</span><br><span class="line">uintptr_t deallocating      : 1;</span><br><span class="line">uintptr_t has_sidetable_rc  : 1;</span><br><span class="line">uintptr_t extra_rc          : 19;</span><br><span class="line">#       define RC_ONE   (1ULL&lt;&lt;45)</span><br><span class="line">#       define RC_HALF  (1ULL&lt;&lt;18)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们发现<code>isa</code>的结构是这种<code>共用体（union）</code>结构，其实使用这种共用体是一种优化，<code>isa</code>不在单独存放的是一个指针信息了，里面存放了更多的其他信息。</p>
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>想要明白<code>isa</code>变成<code>共用体（union）</code>结构,是一种优化，我们需要先了解一些概念</p>
+<ul>
+<li>1、位运算</li>
+<li>2、字节和位</li>
+<li>3、位域</li>
+<li>4、共用体</li>
+</ul>
+<h4 id="位运算"><a href="#位运算" class="headerlink" title="位运算"></a>位运算</h4><p>位运算的运算符有下面几个</p>
+<ul>
+<li>1、左移：<code>&lt;&lt;</code></li>
+<li>2、右移：<code>&gt;&gt;</code></li>
+<li>3、按位或：<code>|</code></li>
+<li>4、按位与：<code>&amp;</code></li>
+<li>5、按位取反：<code>~</code></li>
+<li>6、按位异或：<code>^</code> 其功能是参与运算的两数各对应的二进位相异或，当两对应的二进位相异时，结果为1</li>
+</ul>
+<p><strong>与操作&amp;</strong><br><code>与操作&amp;</code>：都是1则为1，一个0就是0。可以用来取出来特定的位。例如一个二进制<code>0b 0000 0111</code>,我们分别想取出第一位<code>1</code>和第四位<code>0</code>。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> 0000 0111            0000 0111</span><br><span class="line">&amp;0000 0001           &amp;0000 1000</span><br><span class="line">--------------       --------------</span><br><span class="line"> 0000 0001            0000 0000</span><br></pre></td></tr></table></figure></p>
+<p>我们可以发现我们使用按位与&amp;的时候，我们如果想取出哪一位，把改为设置为1，其他位设置为0就可以了。</p>
+<p>介绍到了<code>&amp;</code>，我再来介绍一个概念，<code>掩码：一般用来按位与(&amp;)运算的</code>，具体有什么作用，我们下面会进行讲解</p>
+<p><strong>或操作|</strong></p>
+<p><code>或操作|</code>：一个是1，则为1，全部是0才为0。<br>例如一个二进制<code>0b 0101 1010</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">  0101 1010</span><br><span class="line">| 0001 1100           </span><br><span class="line">--------------</span><br><span class="line">  0101 1110</span><br></pre></td></tr></table></figure>
+<p><code>如果我们想要某一位，就该该位或上一个0</code></p>
+<p><strong>左移：<code>&lt;&lt;</code></strong><br>二进制位全部左移若干位，左边的丢弃，右边补0</p>
+<ul>
+<li>1、1&lt;&lt;0   1左移0位，0b0000 0001</li>
+<li>2、1&lt;&lt;1   1左移1位，0b0000 0010</li>
+<li>3、1&lt;&lt;2   1左移2位，0b0000 0100</li>
+<li>4、1&lt;&lt;3   1左移3位，0b0000 1000</li>
+</ul>
+<p><strong>右移：<code>&gt;&gt;</code></strong></p>
+<p>二进制右移若干位，正数左边补0，负数左边补1，右边丢弃。</p>
+<p>例如 12&gt;&gt;2<br>0000 1100 = 12<br>0000 0011 = 2 (右移后)</p>
+<p>特点：每右移一位，就除以一次2。a&gt;&gt;n 就是 a除以2的n次方</p>
+<h4 id="字节和位"><a href="#字节和位" class="headerlink" title="字节和位"></a>字节和位</h4><ul>
+<li>Bit意为“位”或“比特”，是计算机运算的基础，属于二进制的范畴；</li>
+<li>Byte意为“字节”，是计算机文件大小的基本计算单位；</li>
+</ul>
+<p>通常用bit来作数据传输的单位，因为物理层，数据链路层的传输对于用户是透明的，而这种通信传输是基于二进制的传输。在应用层通常是用byte来作单位，表示文件的大小，在用户看来就是可见的数据大小</p>
+<p><strong>换算</strong><br>1 Byte = 8 Bits<br>1 KB = 1024 Bytes<br>1 MB = 1024 KB<br>1 GB = 1024 MB<br>另外，Byte通常简写为B(大写），而bit通常简写为b（小写）。可以这么记忆，大写的为大单位，实际数值小，小写的为小单位，实际数值较大，1B=8b。</p>
+<h4 id="位域"><a href="#位域" class="headerlink" title="位域"></a>位域</h4><p>所谓”位域“是把一个字节中的二进位划分为几 个不同的区域， 并说明每个区域的位数。每个域有一个域名，允许在程序中按域名进行操作。它实际上是C语言提供的一种数据结构。</p>
+<p>使用位域的好处是：   </p>
+<ul>
+<li>1.有些信息在存储时，并不需要占用一个完整的字节， 而只需占几个或一个二进制位。例如在存放一个开关量时，只有0和1 两种状态， 用一位二进位即可。这样节省存储空间，而且处理简便。 这样就可以把几个不同的对象用一个字节的二进制位域来表示。</li>
+<li>2.可以很方便的利用位域把一个变量给按位分解。比如只需要4个大小在0到3的随即数，就可以只rand()一次，然后每个位域取2个二进制位即可，省时省空间</li>
+</ul>
+<p>struct 位域结构名<br>{ 位域列表 };<br>其中位域列表的形式为： 类型说明符 位域名：位域长度;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct &#123;</span><br><span class="line">char tall : 1;</span><br><span class="line">char rich : 1;</span><br><span class="line">char handsome : 1;</span><br><span class="line">&#125; _tallRichHandsome;</span><br></pre></td></tr></table></figure></p>
+<h4 id="4、共用体"><a href="#4、共用体" class="headerlink" title="4、共用体"></a>4、共用体</h4><p>union中可以定义多个成员，<code>union的大小由最大的成员的大小决定</code>；</p>
+<p>union成员共享同一块大小的内存，一次只能使用其中的一个成员；<br>对union某一个成员赋值，会覆盖其他成员的值（但前提是成员所占字节数相同，当成员所占字节数不同时只会覆盖相应字节上的值，比如对char成员赋值就不会把整个int成员覆盖掉，因为char只占一个字节，而int占四个字节）；<br>union量的存放顺序是所有成员都从低地址开始存放的。</p>
+<h3 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h3><p>例如我们创建一个<code>Person</code>类，里面有三个<code>Bool</code>属性，<code>tall</code>、<code>rich</code>、<code>handsome</code>。 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic,assign) BOOL tall;</span><br><span class="line">@property (nonatomic,assign) BOOL rich;</span><br><span class="line">@property (nonatomic,assign) BOOL handsome;</span><br></pre></td></tr></table></figure>
+<p>我们知道这三个属性占用了<code>6个字节</code>。其实这个时候我们可以考虑到使用<code>位域</code>或者<code>共用体</code>的概念,使用<code>位（Bit）的0和1来代表这三个属性的YES NO</code>，那个三个属性就只是占用了<code>2个字节</code></p>
+<p><strong>位域代码</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">@interface Person()</span><br><span class="line">&#123;</span><br><span class="line">// 位域</span><br><span class="line">struct &#123;</span><br><span class="line">char tall : 1;</span><br><span class="line">char rich : 1;</span><br><span class="line">char handsome : 1;</span><br><span class="line">&#125; _tallRichHandsome;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line">@implementation Person</span><br><span class="line"></span><br><span class="line">- (void)setTall:(BOOL)tall</span><br><span class="line">&#123;</span><br><span class="line">_tallRichHandsome.tall = tall;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isTall</span><br><span class="line">&#123;</span><br><span class="line">return !!_tallRichHandsome.tall;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setRich:(BOOL)rich</span><br><span class="line">&#123;</span><br><span class="line">_tallRichHandsome.rich = rich;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isRich</span><br><span class="line">&#123;</span><br><span class="line">return !!_tallRichHandsome.rich;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setHandsome:(BOOL)handsome</span><br><span class="line">&#123;</span><br><span class="line">_tallRichHandsome.handsome = handsome;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isHandsome</span><br><span class="line">&#123;</span><br><span class="line">return !!_tallRichHandsome.handsome;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>为什么会出现<code>!!</code>，我们知道<code>!(-1) == NO</code> ，<code>!</code>上一个存在的值是<code>NO</code>，<code>!!</code>两次那么只会出现YES 和 NO了。</p>
+<p><strong>共用体</strong></p>
+<p>其实我们观察isa的类型，发现isa其实是使用的<code>共用体</code>，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">#define TallMask (1&lt;&lt;0)</span><br><span class="line">#define RichMask (1&lt;&lt;1)</span><br><span class="line">#define HandsomeMask (1&lt;&lt;2)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface Person()</span><br><span class="line">&#123;</span><br><span class="line">union &#123;</span><br><span class="line">int bits;</span><br><span class="line">struct &#123;</span><br><span class="line">char tall : 1;</span><br><span class="line">char rich : 1;</span><br><span class="line">char handsome : 1;</span><br><span class="line">&#125;;</span><br><span class="line">&#125; _tallRichHandsome;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Person</span><br><span class="line"></span><br><span class="line">- (void)setTall:(BOOL)tall</span><br><span class="line">&#123;</span><br><span class="line">if (tall) &#123;</span><br><span class="line">_tallRichHandsome.bits |= TallMask;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">_tallRichHandsome.bits &amp;= ~TallMask;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isTall</span><br><span class="line">&#123;</span><br><span class="line">return !!(_tallRichHandsome.bits &amp; TallMask);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setRich:(BOOL)rich</span><br><span class="line">&#123;</span><br><span class="line">if (rich) &#123;</span><br><span class="line">_tallRichHandsome.bits |= RichMask;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">_tallRichHandsome.bits &amp;= ~RichMask;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isRich</span><br><span class="line">&#123;</span><br><span class="line">return !!(_tallRichHandsome.bits &amp; RichMask);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)setHandsome:(BOOL)handsome</span><br><span class="line">&#123;</span><br><span class="line">if (handsome) &#123;</span><br><span class="line">_tallRichHandsome.bits |= HandsomeMask;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">_tallRichHandsome.bits &amp;= ~HandsomeMask;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isHandsome</span><br><span class="line">&#123;</span><br><span class="line">return !!(_tallRichHandsome.bits &amp; HandsomeMask);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><code>#define TallMask (1&lt;&lt;0)</code>这是掩码，为了方便阅读。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct &#123;</span><br><span class="line">char tall : 1;</span><br><span class="line">char rich : 1;</span><br><span class="line">char handsome : 1;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>其实也仅仅是方便阅读的作用，让我们知道<code>tall</code>、<code>rich</code>、<code>handsome</code>是在哪一位上，去掉并不影响代码。</p>
+<h3 id="扩展：位运算应用"><a href="#扩展：位运算应用" class="headerlink" title="扩展：位运算应用"></a>扩展：位运算应用</h3><p>其实我们可以看到苹果官方文档上面有很多地方运用到了位运算<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_ENUM(NSInteger, LXDAuthorizationType)</span><br><span class="line">&#123;</span><br><span class="line">LXDAuthorizationTypeNone = 0,</span><br><span class="line">LXDAuthorizationTypePush = 1 &lt;&lt; 0,  ///&lt;    推送授权</span><br><span class="line">LXDAuthorizationTypeLocation = 1 &lt;&lt; 1,  ///&lt;    定位授权</span><br><span class="line">LXDAuthorizationTypeCamera = 1 &lt;&lt; 2,    ///&lt;    相机授权</span><br><span class="line">LXDAuthorizationTypePhoto = 1 &lt;&lt; 3,     ///&lt;    相册授权</span><br><span class="line">LXDAuthorizationTypeAudio = 1 &lt;&lt; 4,  ///&lt;    麦克风授权</span><br><span class="line">LXDAuthorizationTypeContacts = 1 &lt;&lt; 5,  ///&lt;    通讯录授权</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">typedef NS_OPTIONS(NSUInteger, UIViewAutoresizing) &#123;</span><br><span class="line">UIViewAutoresizingNone                 = 0,</span><br><span class="line">UIViewAutoresizingFlexibleLeftMargin   = 1 &lt;&lt; 0,</span><br><span class="line">UIViewAutoresizingFlexibleWidth        = 1 &lt;&lt; 1,</span><br><span class="line">UIViewAutoresizingFlexibleRightMargin  = 1 &lt;&lt; 2,</span><br><span class="line">UIViewAutoresizingFlexibleTopMargin    = 1 &lt;&lt; 3,</span><br><span class="line">UIViewAutoresizingFlexibleHeight       = 1 &lt;&lt; 4,</span><br><span class="line">UIViewAutoresizingFlexibleBottomMargin = 1 &lt;&lt; 5</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>太多了，我就不一一列举了。其实我们在有些情况下也可以参考这样的设计。<br> 例如<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">typedef enum &#123;</span><br><span class="line">OptionsOne = 1&lt;&lt;0,   // 0b0001</span><br><span class="line">OptionsTwo = 1&lt;&lt;1,   // 0b0010</span><br><span class="line">OptionsThree = 1&lt;&lt;2, // 0b0100</span><br><span class="line">OptionsFour = 1&lt;&lt;3   // 0b1000</span><br><span class="line">&#125; Options</span><br><span class="line"></span><br><span class="line">- (void)setOptions:(Options)options</span><br><span class="line">&#123;</span><br><span class="line">if (options &amp; OptionsOne) &#123;</span><br><span class="line">NSLog(@&quot;包含了OptionsOne&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if (options &amp; OptionsTwo) &#123;</span><br><span class="line">NSLog(@&quot;包含了OptionsTwo&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if (options &amp; OptionsThree) &#123;</span><br><span class="line">NSLog(@&quot;包含了OptionsThree&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if (options &amp; OptionsFour) &#123;</span><br><span class="line">NSLog(@&quot;包含了OptionsFour&quot;);</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">调用上面方法</span><br><span class="line">[self setOptions: OptionsOne | OptionsFour];</span><br></pre></td></tr></table></figure></p>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><img src="/2018/12/21/8-1-RunTime实现原理/isa.png" title="isa">
+<p>最后我们在看一下isa结构吧</p>
+<ul>
+<li>1、nonpointer：0，代表普通的指针，存储着Class、Meta-Class对象的内存地址；1，代表优化过，使用位域存储更多的信息</li>
+<li>2、has_assoc：是否有设置过关联对象，如果没有，释放时会更快</li>
+<li>3、has_cxx_dtor：是否有C++的析构函数（.cxx_destruct），如果没有，释放时会更快</li>
+<li>4、shiftcls：存储着Class、Meta-Class对象的内存地址信息</li>
+<li>5、magic：用于在调试时分辨对象是否未完成初始化</li>
+<li>6、weakly_referenced：是否有被弱引用指向过，如果没有，释放时会更快</li>
+<li>7、deallocating：对象是否正在释放</li>
+<li>8、extra_rc：里面存储的值是引用计数器 </li>
+<li>9、has_sidetable_rc：引用计数器是否过大无法存储在isa中；如果为1，那么引用计数会存储在一个叫SideTable的类的属性中</li>
+</ul>
+
       
     </div>
     
@@ -333,6 +435,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +515,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -425,7 +542,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -487,6 +604,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#运行时"><span class="nav-number">1.</span> <span class="nav-text">运行时</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1、isa解析"><span class="nav-number">2.</span> <span class="nav-text">1、isa解析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#isa指针"><span class="nav-number">2.0.1.</span> <span class="nav-text">isa指针</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">2.1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#位运算"><span class="nav-number">2.1.1.</span> <span class="nav-text">位运算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字节和位"><span class="nav-number">2.1.2.</span> <span class="nav-text">字节和位</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#位域"><span class="nav-number">2.1.3.</span> <span class="nav-text">位域</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4、共用体"><span class="nav-number">2.1.4.</span> <span class="nav-text">4、共用体</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#案例"><span class="nav-number">2.2.</span> <span class="nav-text">案例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩展：位运算应用"><span class="nav-number">2.3.</span> <span class="nav-text">扩展：位运算应用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最后"><span class="nav-number">2.4.</span> <span class="nav-text">最后</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -500,7 +633,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

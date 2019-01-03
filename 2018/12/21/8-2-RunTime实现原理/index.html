@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,29 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="方法缓存我们先来整体的看一下结构  1、class类中只要有isa指针、superClass、cache方法缓存、bits具体的类信息  2、bits &amp;amp; FAST_DATA_MASK 指向一个新的结构体Class_rw_t，里面包含着methods方法列表、properties属性列表、protocols协议列表、class_ro_t类的初始化信息等一些类信息  Class_rw_tCl">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="8.2 RunTime实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="方法缓存我们先来整体的看一下结构  1、class类中只要有isa指针、superClass、cache方法缓存、bits具体的类信息  2、bits &amp;amp; FAST_DATA_MASK 指向一个新的结构体Class_rw_t，里面包含着methods方法列表、properties属性列表、protocols协议列表、class_ro_t类的初始化信息等一些类信息  Class_rw_tCl">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:29:20.998Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存1.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存3.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存4.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/OC对象的分类2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存5.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存6.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存7.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存8.png">
+<meta property="og:updated_time" content="2018-12-24T08:25:19.524Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="8.2 RunTime实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="方法缓存我们先来整体的看一下结构  1、class类中只要有isa指针、superClass、cache方法缓存、bits具体的类信息  2、bits &amp;amp; FAST_DATA_MASK 指向一个新的结构体Class_rw_t，里面包含着methods方法列表、properties属性列表、protocols协议列表、class_ro_t类的初始化信息等一些类信息  Class_rw_tCl">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/8-2-RunTime实现原理/方法缓存.png">
 
 
 
@@ -292,6 +304,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +353,99 @@
       
 
       
-        
+        <h2 id="方法缓存"><a href="#方法缓存" class="headerlink" title="方法缓存"></a>方法缓存</h2><p>我们先来整体的看一下结构<br><img src="/2018/12/21/8-2-RunTime实现原理/方法缓存.png" title="方法缓存"></p>
+<ul>
+<li>1、class类中只要有<code>isa指针</code>、<code>superClass</code>、<code>cache方法缓存</code>、<code>bits具体的类信息</code> </li>
+<li>2、<code>bits &amp; FAST_DATA_MASK</code> 指向一个新的结构体<code>Class_rw_t</code>，里面包含着<code>methods方法列表</code>、<code>properties属性列表</code>、<code>protocols协议列表</code>、<code>class_ro_t类的初始化信息</code>等一些类信息</li>
+</ul>
+<p><strong>Class_rw_t</strong><br><code>Class_rw_t</code>里面的<code>methods方法列表</code>、<code>properties属性列表</code>都是二维数组，是<strong>可读可写</strong>的，包含<code>类的初始内容</code>，<code>分类的内容</code></p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存1.png" title="方法缓存1">
+<p><strong>class_ro_t</strong></p>
+<p><code>class_ro_t</code>里面的baseMethodList，baseProtocols，Ivars，baseProperties是一维数组，是<strong>只读</strong>的，包含类的初始化内容</p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存2.png" title="方法缓存2">
+<p><strong>method_t</strong></p>
+<p><code>method_t</code>是对方法的封装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct method_t&#123;</span><br><span class="line">SEL name;//函数名</span><br><span class="line">const char *types;//编码（返回值类型，参数类型）</span><br><span class="line">IMP imp;//指向函数的指针（函数地址）</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>IMP</strong></p>
+<p>IMP代表函数的具体实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef id _Nullable (*IMP)(id _Nonnull, SEL _Nonnull, ...);</span><br></pre></td></tr></table></figure></p>
+<p>第一个参数是指向self的指针(如果是实例方法，则是类实例的内存地址；如果是类方法，则是指向元类的指针)，第二个参数是方法选择器(selector)</p>
+<p><strong>SEL</strong></p>
+<p>SEL代表方法名，一般叫做选择器，底层结构跟<code>char *</code>类似</p>
+<ul>
+<li>可以通过<code>@selector()</code>和<code>sel_registerName()</code>获得</li>
+<li>可以通过<code>sel_getName()</code>和<code>NSStringFromSelector()</code>转成字符串</li>
+<li>不同类中相同名字的方法，所对应的方法的选择器是相同的</li>
+<li>具体实现<code>typedef struct objc_selector *SEL</code></li>
+</ul>
+<p><strong>types</strong></p>
+<p>types包含了函数返回值，参数编码的字符串</p>
+<p>结构为：返回值  参数1 参数2…参数N</p>
+<p>iOS中提供了一个叫做<code>@encode</code>的指令，可以将具体的类型表示成字符串编码</p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存3.png" title="方法缓存3">
+<p>例如<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// &quot;i24@0:8i16f20&quot;</span><br><span class="line">// 0id 8SEL 16int 20float  == 24</span><br><span class="line">- (int)test:(int)age height:(float)height</span><br></pre></td></tr></table></figure></p>
+<p>每一个方法都有两个默认参数<code>self</code>和<code>_msg</code><br>我们可以查到<code>id</code>类型为<code>@</code>，<code>SEL</code>类型为<code>:</code></p>
+<ul>
+<li>1、第一个参数<code>i</code>返回值</li>
+<li>2、第二个参数<code>@</code> 是<code>id 类型的self</code></li>
+<li>3、第三个参数<code>:</code>是<code>SEL 类型的_msg</code></li>
+<li>4、第四个参数<code>i</code> 是<code>Int age</code></li>
+<li>5、第五个参数<code>f</code> 是<code>float height</code></li>
+</ul>
+<p>其中加载的数字其实是跟所占字节有关</p>
+<ul>
+<li>1、<code>24</code> 总共占有多少字节</li>
+<li>2、<code>@0</code>  是<code>id 类型的self</code>的起始位置为0</li>
+<li>3、<code>:8</code> 是因为<code>id 类型的self</code>占字节为8，所以SEL 类型的_msg`的起始位置为8</li>
+</ul>
+<h3 id="方法缓存-1"><a href="#方法缓存-1" class="headerlink" title="方法缓存"></a>方法缓存</h3><p>Class内部结构中有一个方法缓存<code>cache_t</code>，用散列表（哈希表）来缓存曾经调用过的方法，可以提高方法的查找速度。</p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存4.png" title="方法缓存4">
+<p><code>cache_t</code>结构体里面有三个元素</p>
+<ul>
+<li><p><code>buckets</code> 散列表，是一个数组，数组里面的每一个元素就是一个<code>bucket_t</code>,<code>bucket_t</code>里面存放两个</p>
+<ul>
+<li><code>_key</code> SEL作为key</li>
+<li><code>_imp</code> 函数的内存地址</li>
+</ul>
+</li>
+<li><p><code>_mask</code> 散列表的长度</p>
+</li>
+<li><code>_occupied</code>已经缓存的方法数量</li>
+</ul>
+<p><strong>为什么会用到方法缓存</strong></p>
+<img src="/2018/12/21/8-2-RunTime实现原理/OC对象的分类2.png" title="OC对象的分类2">
+<p>这张图片是我们方法产找路径，如果我们的一个类有多个父类，需要调用父类方法，他的查找路径为</p>
+<ul>
+<li>1、先遍历自己所有的方法</li>
+<li>2、如果在自己类中找不到方法，则遍历父类所有方法，没有查找到调用方法之前，一直重复该动作<br>如果每一次方法调用都是走这样的步骤，对于<code>系统级方法</code>来说，其实还是比较消耗资源的，为了应对这个情况。出现了<code>方法缓存</code>，调用过的方法，都放在缓存列表中，下次查找方法的时候，现在缓存中查找，如果缓存中查找不到，然后在执行上面的方法查找流程。</li>
+</ul>
+<p><strong>散列表结构</strong></p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存5.png" title="方法缓存5">
+<p>散列表的结构大概就像上面那样，数组的下标是通过<code>@selector(方法名)&amp;_mask</code>来求得，具体每一个数组的元素是一个结构体,里面包含两个元素<code>_imp</code>和<code>@selector(方法名)作为的key</code></p>
+<p>我们在上一篇文章中知道，一个值<code>与&amp;上一个_mask</code>，得出的结果一定小于等于<code>_mask</code>值，而<code>_mask</code>值为数组长度-1，所以任何时候，也不会越界。</p>
+<p>其实这就是散列表的算法，也有一些其他的算法，<code>取余</code>,一个值<code>取余</code>和<code>&amp;</code>的效果是相同的。</p>
+<p>但是这其实是有几个疑虑的</p>
+<ul>
+<li>1、初始<code>_mask</code>是多少？<pre><code>- 初始`_mask`我简单了尝试了一下，第一次可能给3
+</code></pre></li>
+<li>2、随着方法的增加，方法数量超过<code>_mask</code>值了怎么办<pre><code>- 随着方法的增多，方法数量肯定会超过`_mask`，这个时候会清空缓存散列表，然后`_mask`*2
+</code></pre></li>
+<li>3、如果两个值<code>&amp;_mask</code>的值相同了怎么办<pre><code>-  如果两个值`&amp;_mask`的值相同时，第二个`&amp;`减一，知道找到空值，如果减到0还没有找到空位置，那就放在最大位置
+</code></pre></li>
+<li>4、在没有存放<code>cach_t</code>的数组位置怎么处理<ul>
+<li>在没有占用是，会在空位置的值为<code>NULL</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>源码查看</strong><br>我们在<code>objc-cache.mm</code>文件中查找<code>bucket_t * cache_t::find(cache_key_t k, id receiver)</code>方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">bucket_t * cache_t::find(cache_key_t k, id receiver)</span><br><span class="line">&#123;</span><br><span class="line">assert(k != 0);</span><br><span class="line"></span><br><span class="line">bucket_t *b = buckets();</span><br><span class="line">mask_t m = mask();</span><br><span class="line">mask_t begin = cache_hash(k, m);</span><br><span class="line">mask_t i = begin;</span><br><span class="line">do &#123;</span><br><span class="line">if (b[i].key() == 0  ||  b[i].key() == k) &#123;</span><br><span class="line">return &amp;b[i];</span><br><span class="line">&#125;</span><br><span class="line">&#125; while ((i = cache_next(i, m)) != begin);</span><br><span class="line"></span><br><span class="line">// hack</span><br><span class="line">Class cls = (Class)((uintptr_t)this - offsetof(objc_class, cache));</span><br><span class="line">cache_t::bad_cache(receiver, (SEL)k, cls);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>计算index值</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mask_t begin = cache_hash(k, m);</span><br></pre></td></tr></table></figure></p>
+<p>这个方式是计算下标的,我们点击进入查看具体实现，就是<code>@selector(方法名)&amp;_mask</code></p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存6.png" title="方法缓存6">
+<p><strong>当两个值求的下标相同时</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(i = cache_next(i, m)) != begin</span><br></pre></td></tr></table></figure></p>
+<p>具体实现为</p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存7.png" title="方法缓存7">
+<p><code>arm64</code>和<code>x86</code>实现方法不一样</p>
+<p>这里有一个<code>MJ老师</code>封装的能够查看对象各种属性的方法,想要使用的可以在<a href="https://github.com/SunshineBrother/JHBlog/blob/master/iOS知识点/iOS底层/RunTime/MJClassInfo.h" target="_blank" rel="noopener">这里</a>查看</p>
+<img src="/2018/12/21/8-2-RunTime实现原理/方法缓存8.png" title="方法缓存8">
       
     </div>
     
@@ -333,6 +459,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +539,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -425,7 +566,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -487,6 +628,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#方法缓存"><span class="nav-number">1.</span> <span class="nav-text">方法缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#方法缓存-1"><span class="nav-number">1.1.</span> <span class="nav-text">方法缓存</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -500,7 +657,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

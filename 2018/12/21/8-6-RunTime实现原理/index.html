@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,21 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="isKindOfClass和isMemberOfClass区别我们直接源码查找相关实现123456789101112131415161718192021+ (BOOL)isMemberOfClass:(Class)cls &amp;#123;return object_getClass((id)self) == cls;&amp;#125;- (BOOL)isMemberOfClass:(Class)cls &amp;#">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="8.6 RunTime实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/8-6-RunTime实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="isKindOfClass和isMemberOfClass区别我们直接源码查找相关实现123456789101112131415161718192021+ (BOOL)isMemberOfClass:(Class)cls &amp;#123;return object_getClass((id)self) == cls;&amp;#125;- (BOOL)isMemberOfClass:(Class)cls &amp;#">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:30:24.710Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-6-RunTime实现原理/isMemberOfClass.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-6-RunTime实现原理/isKindOfClass.png">
+<meta property="og:updated_time" content="2018-12-24T09:31:01.002Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="8.6 RunTime实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="isKindOfClass和isMemberOfClass区别我们直接源码查找相关实现123456789101112131415161718192021+ (BOOL)isMemberOfClass:(Class)cls &amp;#123;return object_getClass((id)self) == cls;&amp;#125;- (BOOL)isMemberOfClass:(Class)cls &amp;#">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/8-6-RunTime实现原理/isMemberOfClass.png">
 
 
 
@@ -292,6 +296,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +345,19 @@
       
 
       
-        
+        <h2 id="isKindOfClass和isMemberOfClass区别"><a href="#isKindOfClass和isMemberOfClass区别" class="headerlink" title="isKindOfClass和isMemberOfClass区别"></a>isKindOfClass和isMemberOfClass区别</h2><p>我们直接源码查找相关实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)isMemberOfClass:(Class)cls &#123;</span><br><span class="line">return object_getClass((id)self) == cls;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isMemberOfClass:(Class)cls &#123;</span><br><span class="line">return [self class] == cls;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (BOOL)isKindOfClass:(Class)cls &#123;</span><br><span class="line">for (Class tcls = object_getClass((id)self); tcls; tcls = tcls-&gt;superclass) &#123;</span><br><span class="line">if (tcls == cls) return YES;</span><br><span class="line">&#125;</span><br><span class="line">return NO;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (BOOL)isKindOfClass:(Class)cls &#123;</span><br><span class="line">for (Class tcls = [self class]; tcls; tcls = tcls-&gt;superclass) &#123;</span><br><span class="line">if (tcls == cls) return YES;</span><br><span class="line">&#125;</span><br><span class="line">return NO;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="isMemberOfClass"><a href="#isMemberOfClass" class="headerlink" title="isMemberOfClass"></a>isMemberOfClass</h3><p>一个对象是否是指定类的实例对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)isMemberOfClass:(Class)cls &#123;</span><br><span class="line">return [self class] == cls;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (BOOL)isMemberOfClass:(Class)cls &#123;</span><br><span class="line">return object_getClass((id)self) == cls;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2018/12/21/8-6-RunTime实现原理/isMemberOfClass.png" title="isMemberOfClass">
+<h3 id="isKindOfClass"><a href="#isKindOfClass" class="headerlink" title="isKindOfClass"></a>isKindOfClass</h3><p>判断一个对象是否是指定类或者某个从该类继承类的实例对象。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)isKindOfClass:(Class)cls &#123;</span><br><span class="line">for (Class tcls = [self class]; tcls; tcls = tcls-&gt;superclass) &#123;</span><br><span class="line">if (tcls == cls) return YES;</span><br><span class="line">&#125;</span><br><span class="line">return NO;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2018/12/21/8-6-RunTime实现原理/isKindOfClass.png" title="isKindOfClass">
+<p>需要注意类的查找方式：</p>
+<ul>
+<li>实例对象isa指向类对象，类对象isa指向元类对象</li>
+<li>对象的superClass 指向父类。</li>
+<li><code>Person</code> 和 <code>[Person class]</code>是相等的</li>
+</ul>
+
       
     </div>
     
@@ -333,6 +371,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +451,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -425,7 +478,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -487,6 +540,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#isKindOfClass和isMemberOfClass区别"><span class="nav-number">1.</span> <span class="nav-text">isKindOfClass和isMemberOfClass区别</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#isMemberOfClass"><span class="nav-number">1.1.</span> <span class="nav-text">isMemberOfClass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#isKindOfClass"><span class="nav-number">1.2.</span> <span class="nav-text">isKindOfClass</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -500,7 +569,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

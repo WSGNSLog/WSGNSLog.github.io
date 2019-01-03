@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,28 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="objc_msgSend执行流程OC中的方法调用，其实都是转化为objc_msgSend函数的调用，objc_msgSend的执行流程可以分为3大阶段  1、消息发送 2、动态方法解析 3、消息转发  消息发送 消息发送流程是我们平时最经常使用的流程，其他的像动态方法解析和消息转发其实是补救措施。具体流程如下  1、首先判断消息接受者receiver是否为nil，如果为nil直接退出消息发送 2、">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="8.3 RunTime实现原理">
 <meta property="og:url" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="objc_msgSend执行流程OC中的方法调用，其实都是转化为objc_msgSend函数的调用，objc_msgSend的执行流程可以分为3大阶段  1、消息发送 2、动态方法解析 3、消息转发  消息发送 消息发送流程是我们平时最经常使用的流程，其他的像动态方法解析和消息转发其实是补救措施。具体流程如下  1、首先判断消息接受者receiver是否为nil，如果为nil直接退出消息发送 2、">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-21T02:30:00.696Z">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送1.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送2.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送3.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送4.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送5.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送6.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送7.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送8.png">
+<meta property="og:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送9.png">
+<meta property="og:updated_time" content="2018-12-24T08:31:42.806Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="8.3 RunTime实现原理">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="objc_msgSend执行流程OC中的方法调用，其实都是转化为objc_msgSend函数的调用，objc_msgSend的执行流程可以分为3大阶段  1、消息发送 2、动态方法解析 3、消息转发  消息发送 消息发送流程是我们平时最经常使用的流程，其他的像动态方法解析和消息转发其实是补救措施。具体流程如下  1、首先判断消息接受者receiver是否为nil，如果为nil直接退出消息发送 2、">
+<meta name="twitter:image" content="http://yoursite.com/2018/12/21/8-3-RunTime实现原理/消息发送1.png">
 
 
 
@@ -292,6 +303,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +352,87 @@
       
 
       
-        
+        <h2 id="objc-msgSend执行流程"><a href="#objc-msgSend执行流程" class="headerlink" title="objc_msgSend执行流程"></a>objc_msgSend执行流程</h2><p>OC中的方法调用，其实都是转化为<code>objc_msgSend</code>函数的调用，<code>objc_msgSend</code>的执行流程可以分为3大阶段</p>
+<ul>
+<li>1、消息发送</li>
+<li>2、动态方法解析</li>
+<li>3、消息转发</li>
+</ul>
+<h3 id="消息发送"><a href="#消息发送" class="headerlink" title="消息发送"></a>消息发送</h3><img src="/2018/12/21/8-3-RunTime实现原理/消息发送1.png" title="消息发送1">
+<p>消息发送流程是我们平时最经常使用的流程，其他的像<code>动态方法解析</code>和<code>消息转发</code>其实是补救措施。具体流程如下</p>
+<ul>
+<li>1、首先判断消息接受者<code>receiver</code>是否为nil，如果为nil直接退出消息发送</li>
+<li>2、如果存在消息接受者<code>receiverClass</code>，首先在消息接受者<code>receiverClass</code>的<code>cache</code>中查找方法，如果找到方法，直接调用。如果找不到，往下进行</li>
+<li>3、没有在消息接受者<code>receiverClass</code>的<code>cache</code>中找到方法，则从<code>receiverClass</code>的<code>class_rw_t</code>中查找方法，如果找到方法，执行方法，并把该方法缓存到<code>receiverClass</code>的<code>cache</code>中；如果没有找到，往下进行</li>
+<li>4、没有在<code>receiverClass</code>中找到方法，则通过<code>superClass指针</code>找到<code>superClass</code>，也是现在缓存中查找，如果找到，执行方法，并把该方法缓存到<code>receiverClass</code>的<code>cache</code>中；如果没有找到，往下进行</li>
+<li>5、没有在消息接受者<code>superClass</code>的<code>cache</code>中找到方法，则从<code>superClass</code>的<code>class_rw_t</code>中查找方法，如果找到方法，执行方法，并把该方法缓存到<code>receiverClass</code>的<code>cache</code>中；如果没有找到，重复4、5步骤。如果找不到了<code>superClass</code>了，往下进行</li>
+<li>6、如果在最底层的<code>superClass</code>也找不到该方法，则要转到<code>动态方法解析</code></li>
+</ul>
+<h3 id="动态方法解析"><a href="#动态方法解析" class="headerlink" title="动态方法解析"></a>动态方法解析</h3><img src="/2018/12/21/8-3-RunTime实现原理/消息发送2.png" title="消息发送2">
+<ul>
+<li><p>开发者可以实现以下方法，来动态添加方法实现</p>
+<ul>
+<li>+resolveInstanceMethod:</li>
+<li>+resolveClassMethod:</li>
+</ul>
+</li>
+<li><p>动态解析过后，会重新走“消息发送”的流程，从receiverClass的cache中查找方法这一步开始执行</p>
+</li>
+</ul>
+<p>我们创建一个<code>Person</code>类，然后在<code>.h</code>文件中写一个<code>- (void)test</code>，但是不写具体实现，然后调用。会打印出最常见的<code>unrecognized selector sent to instance 0x100559b60</code>。</p>
+<p><strong>动态方法解析1</strong></p>
+<p>动态方法解析需要调用<code>resolveInstanceMethod</code>或者<code>resolveClassMethod</code>一个对应实例方法，一个对应类方法。我们这里是实例方法使用<code>resolveInstanceMethod</code></p>
+<p>我们看一下<code>resolveInstanceMethod</code>的解释，在我们需要执行<code>动态方法解析</code>的时候我们最好返回<code>YES</code>。</p>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送3.png" title="消息发送3">
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">- (void)other&#123;</span><br><span class="line">NSLog(@&quot;%s&quot;,__func__);</span><br><span class="line">&#125;</span><br><span class="line">+ (BOOL)resolveInstanceMethod:(SEL)sel&#123;</span><br><span class="line">if (sel == @selector(test)) &#123;</span><br><span class="line">//获取其他方法</span><br><span class="line">Method method = class_getInstanceMethod(self, @selector(other));</span><br><span class="line">//动态添加test的方法</span><br><span class="line">class_addMethod(self, sel, method_getImplementation(method), method_getTypeEncoding(method));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">return [super resolveInstanceMethod:sel];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p> 在<code>class_addMethod</code>方法中我们需要<code>imp</code>，<code>types</code>，但是OC并没有提供相关属性，所有我们可以调用相关方法来获取相关参数</p>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送4.png" title="消息发送4">
+<p><strong>动态方法解析2</strong></p>
+<p>这里我们在随便验证一下<code>method</code>的结构是不是这种<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct method_t &#123;</span><br><span class="line">SEL sel;</span><br><span class="line">char *types;</span><br><span class="line">IMP imp;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们代码改成这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">struct method_t &#123;</span><br><span class="line">SEL sel;</span><br><span class="line">char *types;</span><br><span class="line">IMP imp;</span><br><span class="line">&#125;;</span><br><span class="line">+ (BOOL)resolveInstanceMethod:(SEL)sel&#123;</span><br><span class="line"></span><br><span class="line">if (sel == @selector(test)) &#123;</span><br><span class="line">//获取其他方法</span><br><span class="line">struct method_t *method = (struct method_t *)class_getInstanceMethod(self, @selector(other));</span><br><span class="line">//动态添加test的方法</span><br><span class="line">class_addMethod(self, sel, method-&gt;imp, method-&gt;types);</span><br><span class="line"></span><br><span class="line">return  YES;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">return [super resolveInstanceMethod:sel];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送5.png" title="消息发送5">
+<p><strong>动态方法解析3</strong></p>
+<p>其实我们还可以用C语言验证一下，<code>提示：C语言中函数方法就是函数的地址</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">void c_other(id self, SEL _cmd)</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;c_other - %@ - %@&quot;, self, NSStringFromSelector(_cmd));</span><br><span class="line">&#125;</span><br><span class="line">+ (BOOL)resolveInstanceMethod:(SEL)sel&#123;</span><br><span class="line"></span><br><span class="line">if (sel == @selector(test)) &#123;</span><br><span class="line"></span><br><span class="line">class_addMethod(self, sel, (IMP)c_other, &quot;v16@0:8&quot;);</span><br><span class="line">return YES;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">return [super resolveInstanceMethod:sel];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="消息转发"><a href="#消息转发" class="headerlink" title="消息转发"></a>消息转发</h3><p>如果方法一个方法在<code>消息发送阶段</code>没有找到相关方法，也没有进行<code>动态方法解析</code>，这个时候就会走到消息转发阶段了。</p>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送6.png" title="消息发送6">
+<ul>
+<li>调用<code>forwardingTargetForSelector</code>，返回值不为nil时，会调用<code>objc_msgSend(返回值, SEL)</code></li>
+<li>调用<code>methodSignatureForSelector</code>,返回值不为nil，调用<code>forwardInvocation:</code>方法；返回值为nil时，调用<code>doesNotRecognizeSelector:</code>方法</li>
+<li>开发者可以在forwardInvocation:方法中自定义任何逻辑</li>
+<li>以上方法都有对象方法、类方法2个版本（前面可以是加号+，也可以是减号-）</li>
+</ul>
+<p><strong>forwardingTargetForSelector</strong></p>
+<p>我们创建一个命令行项目，创建两个类，<code>person</code>和<code>Student</code>,在<code>person.h</code>里面写一个实例方法，但是不去实现相关方法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line">- (void)test;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@interface Student : NSObject</span><br><span class="line">- (void)test;</span><br><span class="line">@end</span><br><span class="line">#import &quot;Student.h&quot;</span><br><span class="line"></span><br><span class="line">@implementation Student</span><br><span class="line">- (void)test&#123;</span><br><span class="line">NSLog(@&quot;%s&quot;,__func__);</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p>调用的时候回报出我们最常见的错误<code>unrecognized selector sent to instance 0x100747a50</code></p>
+<p>如果我们在<code>person</code>里面实现这个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (id)forwardingTargetForSelector:(SEL)aSelector&#123;</span><br><span class="line">if (aSelector == @selector(test)) &#123;</span><br><span class="line">return [[Student alloc]init];</span><br><span class="line">&#125;</span><br><span class="line">return nil;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送7.png" title="消息发送7">
+<p>调用<code>forwardingTargetForSelector</code>，返回值不为nil时，会调用<code>objc_msgSend(返回值, SEL)</code>，结果就是调用了<code>objc_msgSend(Student,test)</code></p>
+<p><strong>methodSignatureForSelector（方法签名）</strong></p>
+<p>当<code>forwardingTargetForSelector</code>返回值为nil，或者都没有调用该方法的时候，系统会调用<code>methodSignatureForSelector</code>方法。调用<code>methodSignatureForSelector</code>,返回值不为nil，调用<code>forwardInvocation:</code>方法；返回值为nil时，调用<code>doesNotRecognizeSelector:</code>方法</p>
+<p>对于方法签名的生成方式</p>
+<ul>
+<li>1、<code>[NSMethodSignature signatureWithObjCTypes:&quot;i@:i&quot;]</code></li>
+<li><p>2、<code>[[[Student alloc]init] methodSignatureForSelector:aSelector];</code></p>
+<p>实现方法签名以后我们还要实现<code>forwardInvocation</code>方法，当调用<code>person</code>的<code>test</code>的方法的时候，就会走到这个方法中</p>
+</li>
+</ul>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送8.png" title="消息发送8">
+<p> NSInvocation封装了一个方法调用，包括：方法调用者、方法名、方法参数</p>
+<ul>
+<li>anInvocation.target 方法调用者</li>
+<li>anInvocation.selector 方法名</li>
+<li><p>[anInvocation getArgument:NULL atIndex:0]</p>
+<p>我们也可以先执行<code>NSLog(@&quot;========&quot;);</code>在执行Student的test方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (void)forwardInvocation:(NSInvocation *)anInvocation</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;========&quot;);</span><br><span class="line">anInvocation.target = [[Student alloc]init];</span><br><span class="line">[anInvocation invoke];</span><br><span class="line"></span><br><span class="line">//    [anInvocation invokeWithTarget:[[Student alloc] init]];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<img src="/2018/12/21/8-3-RunTime实现原理/消息发送9.png" title="消息发送9">
+<p>其中这两个方法是一样的<br><code>[anInvocation invokeWithTarget:[[Student alloc] init]];</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">anInvocation.target = [[Student alloc]init];</span><br><span class="line">[anInvocation invoke];</span><br></pre></td></tr></table></figure>
+<p>其实这个方法还是比较有用的，像网上一些对bug处理都会用到这个方法</p>
+
       
     </div>
     
@@ -333,6 +446,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +526,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -425,7 +553,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -487,6 +615,22 @@
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#objc-msgSend执行流程"><span class="nav-number">1.</span> <span class="nav-text">objc_msgSend执行流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#消息发送"><span class="nav-number">1.1.</span> <span class="nav-text">消息发送</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态方法解析"><span class="nav-number">1.2.</span> <span class="nav-text">动态方法解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#消息转发"><span class="nav-number">1.3.</span> <span class="nav-text">消息转发</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -500,7 +644,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

@@ -252,6 +252,1211 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/4-KVC/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/4-KVC/" itemprop="url">4.KVC</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T16:00:13+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>KVC（Key-value coding）键值编码，指iOS的开发中，可以允许开发者通过Key名直接访问对象的属性，或者给对象的属性赋值而不需要调用明确的存取方法。</p>
+<h3 id="1、KVC中常见方法"><a href="#1、KVC中常见方法" class="headerlink" title="1、KVC中常见方法"></a>1、KVC中常见方法</h3><p>我们随便点击进入<code>setValue:forKey</code>方法，我们可以发现里面的方法基本上都是基于<code>NSObject</code>的<code>NSKeyValueCoding</code>分类写的，所以对于所有继承了NSObject的类型，也就是几乎所有的Objective-C对象都能使用KVC(一些纯Swift类和结构体是不支持KVC的)，下面是KVC最为重要的四个方法<br><img src="/2018/12/20/4-KVC/KVC1.png" title="KVC1"><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForKey:(NSString *)key;                          //直接通过Key来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKey:(NSString *)key;          //通过Key来设值</span><br><span class="line">- (nullable id)valueForKeyPath:(NSString *)keyPath;                  //通过KeyPath来取值</span><br><span class="line">- (void)setValue:(nullable id)value forKeyPath:(NSString *)keyPath;  //通过KeyPath来设值</span><br></pre></td></tr></table></figure></p>
+<p><code>NSKeyValueCoding</code>类别中还有其他的一些方法，这些方法在碰到特殊情况或者有特殊需求还是会用到的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">+ (BOOL)accessInstanceVariablesDirectly;</span><br><span class="line">//默认返回YES，表示如果没有找到Set&lt;Key&gt;方法的话，会按照_key，_iskey，key，iskey的顺序搜索成员，设置成NO就不这样搜索</span><br><span class="line"></span><br><span class="line">- (BOOL)validateValue:(inout id __nullable * __nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">//KVC提供属性值正确性�验证的API，它可以用来检查set的值是否正确、为不正确的值做一个替换值或者拒绝设置新值并返回错误原因。</span><br><span class="line"></span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">//这是集合操作的API，里面还有一系列这样的API，如果属性是一个NSMutableArray，那么可以用这个方法来返回。</span><br><span class="line"></span><br><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">//如果Key不存在，且没有KVC无法搜索到任何和Key有关的字段或者属性，则会调用这个方法，默认是抛出异常。</span><br><span class="line"></span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">//和上一个方法一样，但这个方法是设值。</span><br><span class="line"></span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br><span class="line">//如果你在SetValue方法时面给Value传nil，则会调用这个方法</span><br><span class="line"></span><br><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">//输入一组key,返回该组key对应的Value，再转成字典返回，用于将Model转到字典。</span><br></pre></td></tr></table></figure></p>
+<h3 id="2、KVC的内部实现机制"><a href="#2、KVC的内部实现机制" class="headerlink" title="2、KVC的内部实现机制"></a>2、KVC的内部实现机制</h3><h4 id="KVO的setValue-forKey原理"><a href="#KVO的setValue-forKey原理" class="headerlink" title="KVO的setValue:forKey原理"></a>KVO的<code>setValue:forKey</code>原理</h4><p>我们先来一张图片可以直接明了的看清楚实现原理<br><img src="/2018/12/20/4-KVC/KVC2.png" title="KVC2"></p>
+<ul>
+<li>1、按照<code>setKey</code>，<code>_setKey</code>的顺序查找<code>成员方法</code>，如果找到方法，传递参数，调用方法</li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值（<code>accessInstanceVariablesDirectly</code>的返回值默认是<code>YES</code>），<ul>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接赋值，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+</li>
+</ul>
+<h4 id="KVO的ValueforKey原理"><a href="#KVO的ValueforKey原理" class="headerlink" title="KVO的ValueforKey原理"></a>KVO的<code>ValueforKey</code>原理</h4><img src="/2018/12/20/4-KVC/KVC3.png" title="KVC3">
+<ul>
+<li>1、按照<code>getKey,key,isKey,_key</code>的顺序查找<code>成员方法</code>，如果找到直接调用<code>取值</code></li>
+<li>2、如果没有找到，查看<code>accessInstanceVariablesDirectly</code>的返回值</li>
+<li>返回值为YES，按照<code>_Key,_isKey,Key,isKey</code>的顺序查找<code>成员变量</code>，如果找到，直接<code>取值</code>，如果没有找到，调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+<li>返回NO，直接调用<code>setValue:forUndefinedKey:</code>，抛出异常</li>
+</ul>
+<h3 id="3、KVC的使用"><a href="#3、KVC的使用" class="headerlink" title="3、KVC的使用"></a>3、KVC的使用</h3><h4 id="KVC基础使用"><a href="#KVC基础使用" class="headerlink" title="KVC基础使用"></a>KVC基础使用</h4><p>假设我们有一个<code>Person</code>类，里面有一个<code>age</code>属性，我们给<code>age</code>赋值和取值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;age&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;age&quot;]</span><br></pre></td></tr></table></figure>
+<p>这也是最简单的使用方法了，也是我们平时项目中最常使用的方法了</p>
+<h4 id="KVC中使用keyPath"><a href="#KVC中使用keyPath" class="headerlink" title="KVC中使用keyPath"></a>KVC中使用keyPath</h4><p>但是当<code>Person</code>类里面有一个<code>student</code>类，里面有一个<code>height</code>属性，我们怎么赋值<code>height</code>属性呢，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject</span><br><span class="line"></span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Student *stu;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们能否这样写呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">//赋值</span><br><span class="line">[p setValue:@10 forKey:@&quot;stu.height&quot;];</span><br><span class="line">//取值</span><br><span class="line">[p valueForKey:@&quot;stu.height&quot;]</span><br></pre></td></tr></table></figure></p>
+<p>我们运行程序打印结果<br><img src="/2018/12/20/4-KVC/KVC4.png" title="KVC4"></p>
+<p>打印结果是<code>this class is not key value coding-compliant for the key stu.height.</code>,所以这个方法是不可以的，但是iOS为我们提供了另一个方法<code>KeyPath</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">p.stu = [[Student alloc]init];</span><br><span class="line">[p setValue:@180 forKeyPath:@&quot;stu.height&quot;];</span><br><span class="line">NSLog(@&quot;valueForKey:%@&quot;,[p valueForKeyPath:@&quot;stu.height&quot;]);</span><br><span class="line">NSLog(@&quot;stu.height:%f&quot;,p.stu.height);</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/4-KVC/KVC5.png" title="KVC5"></p>
+<p><code>keyPath</code>除了对当前对象的属性进行赋值外，还可以对其更“深层”的对象进行赋值。KVC进行多级访问时，直接类似于属性调用一样用点语法进行访问即可。</p>
+<h4 id="KVC之集合属性"><a href="#KVC之集合属性" class="headerlink" title="KVC之集合属性"></a>KVC之集合属性</h4><p>如果我们想要修改集合类型，我们该怎么办呢，不要着急，系统还是很友好的给我们提供了一些方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (NSMutableArray *)mutableArrayValueForKey:(NSString *)key;</span><br><span class="line">- (NSMutableArray *)mutableArrayValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableSet *)mutableSetValueForKey:(NSString *)key</span><br><span class="line">- (NSMutableSet *)mutableSetValueForKeyPath:(NSString *)keyPath</span><br><span class="line"></span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKey:(NSString *)key </span><br><span class="line">- (NSMutableOrderedSet *)mutableOrderedSetValueForKeyPath:(NSString *)keyPath</span><br></pre></td></tr></table></figure></p>
+<p>简单使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Person *p = [[Person alloc]init];</span><br><span class="line">[[p mutableArrayValueForKey:@&quot;list&quot;] addObject:@&quot;test&quot;];</span><br><span class="line">NSLog(@&quot;mutableArrayValueForKey:%@&quot;,[p valueForKeyPath:@&quot;list&quot;]);</span><br><span class="line">NSLog(@&quot;%@&quot;,p.list);</span><br></pre></td></tr></table></figure></p>
+<p>关于<code>mutableArrayValueForKey:</code>的适用场景，网上一般说是在<code>KVO</code>中，因为<code>KVO的本质是系统监测到某个属性的内存地址或常量改变</code>时会添加上<code>- (void)willChangeValueForKey:(NSString *)key</code>和<code>- (void)didChangeValueForKey:(NSString *)key</code>方法来发送通知，但是如果直接改数组的话，内存地址并没有改变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">_p = [[Person alloc]init];</span><br><span class="line">[_p addObserver:self forKeyPath:@&quot;list&quot; options:options context:nil];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">//    [_p.list addObject:@(arc4random()%255)];</span><br><span class="line">//    NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">//    NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</span><br><span class="line">NSLog(@&quot;打印内存地址：%x&quot;,self.p.list);</span><br><span class="line">NSLog(@&quot;打印内容:%@&quot;,self.p.list);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSString *,id&gt; *)change context:(void *)context&#123;</span><br><span class="line">NSLog(@&quot;%@&quot;,change);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">-(void)dealloc&#123;</span><br><span class="line">[_p removeObserver:self forKeyPath:@&quot;list&quot;]; //一定要在dealloc里面移除观察</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们分别用<code>[_p.list addObject:@(arc4random()%255)];</code>和<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>两个方法修改<code>list</code>内容，我们打印可知<code>[_p.list addObject:@(arc4random()%255)];</code>方法并没有改变<code>list</code>的内存地址，而使用<code>[[self.p mutableArrayValueForKey:@&quot;list&quot;] addObject:@(arc4random()%255)];</code>  ， <code>list</code>的内存地址改变了。</p>
+<h4 id="KVC之字典属性"><a href="#KVC之字典属性" class="headerlink" title="KVC之字典属性"></a>KVC之字典属性</h4><p>KVC里面还有两个关于NSDictionary的方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (NSDictionary&lt;NSString *, id&gt; *)dictionaryWithValuesForKeys:(NSArray&lt;NSString *&gt; *)keys;</span><br><span class="line">- (void)setValuesForKeysWithDictionary:(NSDictionary&lt;NSString *, id&gt; *)keyedValues;</span><br></pre></td></tr></table></figure></p>
+<p><code>dictionaryWithValuesForKeys:</code>是指输入一组key，返回这组key对应的属性，再组成一个字典<br><code>setValuesForKeysWithDictionary</code>是用来修改dic中对应key的属性</p>
+<p>这个属性最常用到的地方就是字典转模型<br>例如我们有一个<code>Student</code>类，<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@interface Student : NSObject</span><br><span class="line">@property (nonatomic,assign) float height;</span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line">@property (nonatomic,strong) NSString *name;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>我们正常是怎么赋值呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu.age = 10;</span><br><span class="line">stu.name = @&quot;jack&quot;;</span><br><span class="line">stu.height = 180;</span><br></pre></td></tr></table></figure></p>
+<p>如果里面有100个属性呢，我们就需要写100遍<br>如果使用<code>setValuesForKeysWithDictionary</code>方法呢<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">//在进行网络请求的时候dic不需要我们手写，是后台返回的</span><br><span class="line">NSDictionary *dic = @&#123;@&quot;name&quot;:@&quot;jack&quot;,@&quot;height&quot;:@180,@&quot;age&quot;:@10&#125;;</span><br><span class="line">[stu setValuesForKeysWithDictionary:dic];</span><br></pre></td></tr></table></figure></p>
+<p>这样是不是简单了好多。</p>
+<h3 id="4、KVC异常处理"><a href="#4、KVC异常处理" class="headerlink" title="4、KVC异常处理"></a>4、KVC异常处理</h3><p>当根据KVC搜索规则，没有搜索到对应的key或者keyPath，则会调用对应的异常方法。异常方法的默认实现，在异常发生时会抛出一个<code>NSUndefinedKeyException</code>的异常，并且应用程序<code>Crash</code>。我们可以重写下面两个方法，根据业务需求合理的处理KVC导致的异常。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>其中重写这两个方法，在<code>key</code>值不存在的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (nullable id)valueForUndefinedKey:(NSString *)key;</span><br><span class="line">- (void)setValue:(nullable id)value forUndefinedKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<p>重写这个方法，当value值为nil的时候，会走下面方法，而不会异常抛出<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">- (void)setNilValueForKey:(NSString *)key;</span><br></pre></td></tr></table></figure></p>
+<h3 id="5、KVC的正确性验证"><a href="#5、KVC的正确性验证" class="headerlink" title="5、KVC的正确性验证"></a>5、KVC的正确性验证</h3><p>在调用KVC时可以先进行验证，验证通过下面两个方法进行，支持key和keyPath两种方式。验证方法默认实现返回YES，可以通过重写对应的方法修改验证逻辑。</p>
+<p>验证方法需要我们手动调用，并不会在进行KVC的过程中自动调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKey:(NSString *)inKey error:(out NSError **)outError;</span><br><span class="line">- (BOOL)validateValue:(inout id _Nullable * _Nonnull)ioValue forKeyPath:(NSString *)inKeyPath error:(out NSError **)outError;</span><br></pre></td></tr></table></figure></p>
+<p> 在validateValue方法的内部实现中，如果传入的value或key有问题，可以通过返回NO来表示错误，并设置NSError对象。</p>
+<p> 因为还需要我们手动调用校验，感觉用处不太大。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/3-KVO/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/3-KVO/" itemprop="url">3.KVO</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T15:25:59+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><code>KVO（key value observing）</code>键值监听是我们在开发中常使用的用于监听特定对象属性值变化的方法，常用于监听数据模型的变化</p>
+<p>KVO是为了监听一个对象的某个属性值是否发生变化。在属性值发生变化的时候，肯定会调用其setter方法。所以<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code></p>
+<p>在学习实现原理之前先了解一下KVO常用的方法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line">注册监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者在回调函数中会被回传</span><br><span class="line">监听的属性路径为keyPath支持点语法的嵌套</span><br><span class="line">监听类型为options支持按位或来监听多个事件类型</span><br><span class="line">监听上下文context主要用于在多个监听器对象监听相同keyPath时进行区分</span><br><span class="line">添加监听器只会保留监听器对象的地址，不会增加引用，也不会在对象释放后置空，因此需要自己持有监听对象的强引用，该参数也会在回调函数中回传</span><br><span class="line">*/</span><br><span class="line">- (void)addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(nullable void *)context;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">删除监听器</span><br><span class="line">监听器对象为observer，被监听对象为消息的发送者即方法的调用者，应与addObserver方法匹配</span><br><span class="line">监听的属性路径为keyPath，应与addObserver方法的keyPath匹配</span><br><span class="line">监听上下文context，应与addObserver方法的context匹配</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath context:(nullable void *)context API_AVAILABLE(macos(10.7), ios(5.0), watchos(2.0), tvos(9.0));</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">与上一个方法相同，只是少了context参数</span><br><span class="line">推荐使用上一个方法，该方法由于没有传递context可能会产生异常结果</span><br><span class="line">*/</span><br><span class="line">- (void)removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line">监听器对象的监听回调方法</span><br><span class="line">keyPath即为监听的属性路径</span><br><span class="line">object为被监听的对象</span><br><span class="line">change保存被监听的值产生的变化</span><br><span class="line">context为监听上下文，由add方法回传</span><br><span class="line">*/</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context;</span><br></pre></td></tr></table></figure>
+<h3 id="KVO简单实现"><a href="#KVO简单实现" class="headerlink" title="KVO简单实现"></a>KVO简单实现</h3><p>我们创建一个<code>person</code>对象，然后在里面添加一个<code>age</code>属性，我们就来观察一下<code>age</code>属性<br><strong>person对象</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">@interface Person : NSObject</span><br><span class="line">@property (nonatomic,assign) NSInteger age;</span><br><span class="line">@end</span><br></pre></td></tr></table></figure>
+<p><strong>简单实现</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#import &quot;ViewController.h&quot;</span><br><span class="line">#import &quot;Person.h&quot;</span><br><span class="line">@interface ViewController ()</span><br><span class="line"></span><br><span class="line">@property (nonatomic,strong) Person *p1;</span><br><span class="line">@property (nonatomic,strong) Person *p2;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation ViewController</span><br><span class="line"></span><br><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">[super viewDidLoad];</span><br><span class="line"></span><br><span class="line">self.p1 = [[Person alloc]init];</span><br><span class="line">self.p2 = [[Person alloc]init];</span><br><span class="line">self.p1.age = 10;</span><br><span class="line">self.p2.age = 20;</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)touchesBegan:(NSSet&lt;UITouch *&gt; *)touches withEvent:(UIEvent *)event&#123;</span><br><span class="line">self.p1.age = arc4random()%100;</span><br><span class="line">self.p2.age = arc4random()%100;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">[self.p1 removeObserver:self forKeyPath:@&quot;age&quot;];</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">// 当监听对象的属性值发生改变时，就会调用</span><br><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary&lt;NSKeyValueChangeKey,id&gt; *)change context:(void *)context</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;监听到%@的%@属性值改变了 - %@ - %@&quot;, object, keyPath, change, context);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上代码就是一个<code>KVO</code>的简单实现，但是我们有没有想过他的内部到底是怎样实现的呢，今天我们就来探究一下<code>KVO</code>的内部实现原理</p>
+<h3 id="KVO的内部实现"><a href="#KVO的内部实现" class="headerlink" title="KVO的内部实现"></a>KVO的内部实现</h3><p>探究一个对象底层实现最简单的办法就行打印一些对象信息，看看有什么改变</p>
+<p>我们在给<code>person1</code>添加监听之前分别打印<code>p1,p2</code>的类信息<br>代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %@ %@&quot;,</span><br><span class="line">object_getClass(self.p1),</span><br><span class="line">object_getClass(self.p2));</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO1.png" title="KVO1"></p>
+<p>我们根据结果看到，在添加KVO观察者之后<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，虽然<code>p1</code>的类对象变成了<code>NSKVONotifying_Person</code>，但是我们在调用的时候感觉我们的<code>p1</code>的类对象还是<code>Person</code>，所以，我们可以猜测<code>KVO</code>会在运行时动态创建一个新类，将对象的<code>isa</code>指向新创建的类，<code>新类是原类的子类</code>，命名规则是<code>NSKVONotifying_xxx</code>的格式。KVO为了使其更像之前的类，还会将对象的<code>class实例方法重写</code>，使其更像原类</p>
+<p> <strong>查看P1内部方法是否改变</strong></p>
+<p>我们在发现<code>p1</code>的类对象由<code>Person</code>变成了<code>NSKVONotifying_Person</code>，那我们也随便打印一下<code>Person</code>和<code>NSKVONotifying_Person</code>内部方法都变成了什么</p>
+<p>打印一下方法名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">- (void)printMethodNamesOfClass:(Class)cls</span><br><span class="line">&#123;</span><br><span class="line">unsigned int count;</span><br><span class="line">// 获得方法数组</span><br><span class="line">Method *methodList = class_copyMethodList(cls, &amp;count);</span><br><span class="line"></span><br><span class="line">// 存储方法名</span><br><span class="line">NSMutableString *methodNames = [NSMutableString string];</span><br><span class="line"></span><br><span class="line">// 遍历所有的方法</span><br><span class="line">for (int i = 0; i &lt; count; i++) &#123;</span><br><span class="line">// 获得方法</span><br><span class="line">Method method = methodList[i];</span><br><span class="line">// 获得方法名</span><br><span class="line">NSString *methodName = NSStringFromSelector(method_getName(method));</span><br><span class="line">// 拼接方法名</span><br><span class="line">[methodNames appendString:methodName];</span><br><span class="line">[methodNames appendString:@&quot;, &quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 释放</span><br><span class="line">free(methodList);</span><br><span class="line"></span><br><span class="line">// 打印方法名</span><br><span class="line">NSLog(@&quot;%@ %@&quot;, cls, methodNames);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后我们分别在KVO监听前后在分别打印一下<code>p1</code>的类对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后的内部方法===&quot;);</span><br><span class="line">[self printMethodNamesOfClass:object_getClass(self.p1)];</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/3-KVO/KVO2.png" title="KVO2"></p>
+<p>我们在来打印一些KVO监听前后<code>setAge</code>方法发生了什么改变，因为值得改变肯定是因为<code>set</code>方法导致的，所以我们打印一下<code>setAge</code>方法。<code>methodForSelector</code>可以打印方法地址，我们分别在KVO监听前后打印</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;person1添加KVO监听之前 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br><span class="line"></span><br><span class="line">// 给person1对象添加KVO监听</span><br><span class="line">NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld;</span><br><span class="line">[self.p1 addObserver:self forKeyPath:@&quot;age&quot; options:options context:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;person1添加KVO监听之后 - %p %p&quot;,</span><br><span class="line">[self.p1 methodForSelector:@selector(setAge:)],</span><br><span class="line">[self.p2 methodForSelector:@selector(setAge:)]);</span><br></pre></td></tr></table></figure>
+<p>打印结果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2018-09-04 10:41:05.823343+0800 KVO[21971:1023542] person1添加KVO监听之前 - 0x103f18540 0x103f18540</span><br><span class="line">2018-09-04 10:41:05.823702+0800 KVO[21971:1023542] person1添加KVO监听之后 - 0x10425ebf4 0x103f18540</span><br></pre></td></tr></table></figure></p>
+<p>我们可以利用lldb分别看一下具体的方法实现：</p>
+<img src="/2018/12/20/3-KVO/KVO5.png" title="KVO5">
+<p>根据以上总结，我们大概猜到在使用KVO前后对象的改变了<br><strong>未使用KVO监听的对象</strong></p>
+<img src="/2018/12/20/3-KVO/KVO3.png" title="KVO3">
+<p><strong>使用KVO监听的对象</strong><br><img src="/2018/12/20/3-KVO/KVO4.png" title="KVO4"></p>
+<ul>
+<li>1、重写class方法是为了我们调用它的时候返回跟重写继承类之前同样的内容。KVO底层交换了 NSKVONotifying_Person 的 class 方法，让其返回 Person</li>
+<li>2、重写setter方法:在新的类中会重写对应的set方法，是为了在set方法中增加另外两个方法的调用<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">- (void)willChangeValueForKey:(NSString *)key</span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在didChangeValueForKey:方法再调用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- (void)observeValueForKeyPath:(NSString *)keyPath</span><br><span class="line">ofObject:(id)object</span><br><span class="line">change:(NSDictionary *)change</span><br><span class="line">context:(void *)context</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>3、重写dealloc方法，销毁新生成的NSKVONotifying_类。</li>
+<li>4、重写_isKVOA方法，这个私有方法估计可能是用来标示该类是一个 KVO 机制声称的类。</li>
+</ul>
+<h3 id="NSSetLongLongValueAndNotify"><a href="#NSSetLongLongValueAndNotify" class="headerlink" title="_NSSetLongLongValueAndNotify"></a>_NSSetLongLongValueAndNotify</h3><p>在添加KVO监听方法以后<code>setAge</code>方法变成了<code>_NSSetLongLongValueAndNotify</code>,所以我们可以大概猜测动态监听方法主要就是在这里面实现的</p>
+<p>我们可以在终端使用<code>nm -a /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation | grep ValueAndNotify</code>命令来查看<code>NSSet*ValueAndNotify</code>的类型<br><img src="/2018/12/20/3-KVO/KVO6.png" title="KVO6"></p>
+<p>我们可以在<code>Person</code>类中重写<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>,来猜测一下<code>_NSSetLongLongValueAndNotify</code>的内部实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (void)setAge:(NSInteger)age&#123;</span><br><span class="line">_age = age;</span><br><span class="line">NSLog(@&quot;调用set方法&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">- (void)willChangeValueForKey:(NSString *)key&#123;</span><br><span class="line">[super willChangeValueForKey:key];</span><br><span class="line">NSLog(@&quot;willChangeValueForKey&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - begin&quot;);</span><br><span class="line"></span><br><span class="line">[super didChangeValueForKey:key];</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;didChangeValueForKey - end&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2018/12/20/3-KVO/KVO7.png" title="KVO7">
+<p>根据打印结果我们可以推断<code>_NSSetLongLongValueAndNotify</code>内部实现为</p>
+<ul>
+<li>1、调用<code>willChangeValueForKey</code>方法</li>
+<li>2、调用<code>setAge</code>方法</li>
+<li>3、调用’didChangeValueForKey’方法</li>
+<li>4、’didChangeValueForKey’方法内部调用<code>oberser</code>的<code>observeValueForKeyPath:ofObject:change:context:</code>方法<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// 伪代码</span><br><span class="line">void _NSSetIntValueAndNotify()</span><br><span class="line">&#123;</span><br><span class="line">[self willChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">[super setAge:age];</span><br><span class="line">[self didChangeValueForKey:@&quot;age&quot;];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)didChangeValueForKey:(NSString *)key</span><br><span class="line">&#123;</span><br><span class="line">// 通知监听器，某某属性值发生了改变</span><br><span class="line">[oberser observeValueForKeyPath:key ofObject:self change:nil context:nil];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="面试题"><a href="#面试题" class="headerlink" title="面试题"></a>面试题</h3><p><strong>1、iOS用什么方式实现对一个对象的KVO（KVO的本质是什么？）</strong></p>
+<ul>
+<li>1、利用RuntimeAPI动态生成一个子类<code>NSKVONotifying_XXX</code>,并且让instance对象的isa指向这个全新的子类<code>NSKVONotifying_XXX</code></li>
+<li>2、当修改对象的属性时，会在子类<code>NSKVONotifying_XXX</code>调用Foundation的<code>_NSSetXXXValueAndNotify</code>函数</li>
+<li>3、在<code>_NSSetXXXValueAndNotify</code>函数中一次调用<ul>
+<li>1、willChangeValueForKey</li>
+<li>2、父类原来的setter</li>
+<li>3、didChangeValueForKey，didChangeValueForKey：内部会出发监听器（Observer）的监听方法( observeValueForKeyPath:ofObject:change:context:）</li>
+</ul>
+</li>
+</ul>
+<p><strong>2、如何手动触发KVO方法</strong><br>手动调用<code>willChangeValueForKey</code>和<code>didChangeValueForKey</code>方法</p>
+<p>键值观察通知依赖于 NSObject 的两个方法: <code>willChangeValueForKey:</code> 和 <code>didChangeValueForKey</code>。在一个被观察属性发生改变之前， <code>willChangeValueForKey:</code> 一定会被调用，这就<br>会记录旧的值。而当改变发生后， <code>didChangeValueForKey</code> 会被调用，继而 <code>observeValueForKey:ofObject:change:context:</code>也会被调用。如果可以手动实现这些调用，就可以实现“手动触发”了</p>
+<p>有人可能会问只调用<code>didChangeValueForKey</code>方法可以触发KVO方法，其实是不能的，因为<code>willChangeValueForKey:</code> 记录旧的值，如果不记录旧的值，那就没有改变一说了</p>
+<p><strong>3、直接修改成员变量会触发KVO吗</strong><br>不会触发KVO，因为<code>KVO的本质就是监听对象有没有调用被监听属性对应的setter方法</code>，直接修改成员变量，是在内存中修改的，不走<code>set</code>方法</p>
+<p><strong>4、不移除KVO监听，会发生什么</strong></p>
+<ul>
+<li>不移除会造成内存泄漏</li>
+<li>但是多次重复移除会崩溃。系统为了实现KVO，为NSObject添加了一个名为NSKeyValueObserverRegistration的Category，KVO的add和remove的实现都在里面。在移除的时候，系统会判断当前KVO的key是否已经被移除，如果已经被移除，则主动抛出一个NSException的异常</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/2-OC对象的分类/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/2-OC对象的分类/" itemprop="url">2.OC对象的分类</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T14:22:57+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>OC对象主要可以分为3种</p>
+<ul>
+<li>1、instance对象（实例对象）：instance实例对象就是通过alloc出来的对象，每次调用alloc都会产生新的instance对象</li>
+<li>2、class对象（类对象）：每个类的内存中有且只有一个类对象</li>
+<li>3、meta-class对象（元类对象）：每个类的内存中有且只有一个元类对象</li>
+</ul>
+<p>实例对象的存储信息</p>
+<ul>
+<li>isa指针</li>
+<li>其他成员变量</li>
+</ul>
+<p>类对象的存储信息<br>-isa指针</p>
+<ul>
+<li>superClass指针</li>
+<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
+</ul>
+<p>元类的存储信息</p>
+<ul>
+<li>isa指针</li>
+<li>superClass指针</li>
+<li>类的属性信息（@property），类的对象方法信息（method），类的协议信息（protocol），类的成员变量信息（ivar）</li>
+</ul>
+<p><code>元类和类的存储结构是一样的，但是用途不一样</code><br><img src="/2018/12/20/2-OC对象的分类/OC对象的分类1.png" title="OOC对象的分类1"></p>
+<ul>
+<li>instance的isa指向class，当调用<code>对象方法</code>时，通过instance的isa找到class，最后找到对象方法的实现进行调用</li>
+<li>class的isa指向meta-class，当调用<code>类方法</code>时，通过class当isa找到meta-class，最后找到<code>类方法</code></li>
+</ul>
+<h3 id="总览图"><a href="#总览图" class="headerlink" title="总览图"></a>总览图</h3><img src="/2018/12/20/2-OC对象的分类/OC对象的分类2.png" title="OOC对象的分类2">
+<ul>
+<li>1、instance的isa指向class</li>
+<li>2、class的isa指向meta-class</li>
+<li>3、meta-class的isa指向基类的meta-class</li>
+<li>4、class的superclass指向父类的class，如果没有父类，superclass指向nil</li>
+<li>5、meta-class的superclass指向父类的meta-class，基类的meta-class的superclass指向基类的class</li>
+<li>6、instance的调用轨迹：isa找class，方法不存在，就通过superclass找父类</li>
+<li>7、class调用类方法的轨迹：isa找到meta-class，方法不存在，就通过superclass找父类</li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/20/1-一个NSObject对象占用多少内存/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/20/1-一个NSObject对象占用多少内存/" itemprop="url">1.一个NSObject对象占用多少内存</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-20T09:32:47+08:00">
+                2018-12-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>我们平时所编写的Object-C代码，底层实现都是C/C++代码，</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Object-C代码底层实现.png" title="Object-C代码底层实现">
+<p> 所有OC的面向对象都是基于C/C++的数据结构实现的<br> <code>思考:OC对象主要是基于C/C++的什么数据结构实现的呢？？？</code></p>
+<p> 想要了解OC对象主要是基于C/C++的什么数据结构实现的，我们首先要做的就是将Object-C代码转化为C/C++代码，这样我们才能清楚的看清是怎么实现的</p>
+<p> 然后我们打开终端，命令行cd到文件目录，然后输入：<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -rewrite-objc main.m</span><br></pre></td></tr></table></figure></p>
+<p> 命令可以将main.m编译成C++的代码，改成不同的文件名，就会生成不同的c++代码<br> 这时就生成了main.cpp这个c++文件，打开文件代码查看main.cpp最底下的main函数</p>
+<p> 但是不同平台支持的代码肯定是不一样的，像平台有Windows、mac、iOS<br>，架构有模拟器（i386）、32bit（armv7）、64bit（arm64），我们使用iOS，它的架构现在基本上都是64bit（arm64）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc OC源文件  -o  输出的CPP文件</span><br><span class="line">如果需要链接其他框架，使用-framework参数。比如-framework UIKit</span><br></pre></td></tr></table></figure>
+<p>在终端输入命令以后，我们会生成一个main.cpp文件，打开main.cpp文件，我们把main.cpp拉到最下面，会看到这样一段代码<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     </span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这一段代码就是我们OC代码中的main函数的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure></p>
+<p>这时我们在main函数写入这一段代码，然后点进去，查看代码实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NSObject *obj = [[NSObject alloc]init];</span><br></pre></td></tr></table></figure></p>
+<p>点击NSObject进入内部，可以看到NSObject底层实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 我们用NSObject_IMPL查找在c++文件中具体的实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p> 我们再一次执行命令<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xcrun  -sdk  iphoneos  clang  -arch  arm64  -rewrite-objc mian.m</span><br></pre></td></tr></table></figure></p>
+<p> 生成的C++代码为<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"> int main(int argc, const char * argv[]) &#123;</span><br><span class="line"> /* @autoreleasepool */ &#123; __AtAutoreleasePool __autoreleasepool;</span><br><span class="line">     NSObject *obj = ((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)((NSObject *(*)(id, SEL))(void *)objc_msgSend)((id)objc_getClass(&quot;NSObject&quot;), sel_registerName(&quot;alloc&quot;)), sel_registerName(&quot;init&quot;));</span><br><span class="line">     </span><br><span class="line"> &#125;</span><br><span class="line">return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有两个方法可以打印内存大小<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;objc/runtime.h&gt;</span><br><span class="line">#import &lt;malloc/malloc.h&gt;</span><br><span class="line">//获取NSObject实例对象的成员变量所占用的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,class_getInstanceSize([NSObject class]));</span><br><span class="line"> </span><br><span class="line">//获得obj指针所指向内存的大小</span><br><span class="line">NSLog(@&quot;%zd&quot;,malloc((__bridge const void*)obj)));</span><br></pre></td></tr></table></figure></p>
+<p>打印结果<br><img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存.png" title="NSObject对象内存"></p>
+<h3 id="一个OC对象在内存中是怎样布局的呢"><a href="#一个OC对象在内存中是怎样布局的呢" class="headerlink" title="一个OC对象在内存中是怎样布局的呢"></a>一个OC对象在内存中是怎样布局的呢</h3><p>我们在c++文件中找到NSObject的实现<br>OC代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>c++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>我们知道一个指针式8个字节，但是NSObject对象打印16个字节，他们是怎么布局的呢</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/NSObject对象内存地址.png" title="NSObject对象内存地址">
+<p>我们可以根据内存地址实时查看内存分配情况Debug -&gt; Debug Workfllow -&gt; View Memory （Shift + Command + M）</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据.png" title="查看内存数据">
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据1.png" title="查看内存数据1">
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/查看内存数据2.png" title="查看内存数据2">
+<p>我们也可以直接使用<code>LLDB命令</code>来查看内存地址<br><strong>常用LLDB命令</strong></p>
+<ul>
+<li>print、p：打印</li>
+<li>po:打印对象</li>
+<li>读取内存<ul>
+<li>memory read/数量格式字节数 内存地址</li>
+<li>x/（格式：x是16进制，f是浮点，d是10进制；字节大小：byte 1字节，h：half word 2字节，w：word 4字节，g：giant word 8字节）</li>
+</ul>
+</li>
+<li>修改内存中的值（memory write 内存地址 数值memory write 0x0000010 10）</li>
+</ul>
+<p><strong>问题1</strong>：假设我创建一个<code>Student</code>类，里面有<code>age</code>，<code>number</code>两个属性，那么它的内存是多大呢？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Student *stu = [[Student alloc]init];</span><br><span class="line">stu-&gt;_number = 4;</span><br><span class="line">stu-&gt;_age = 5;</span><br></pre></td></tr></table></figure></p>
+<p>我们先执行命令，查看一下c++源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们在知道结果之前大概猜猜内存是多大呢？16、24、32…</p>
+<p>答案是16个字节。</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印.png" title="Student内存打印">
+<p>我们用<code>LLDB命令</code>打印一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a9 11 00 00 01 80 1d 00 04 00 00 00 05 00 00 00</span><br></pre></td></tr></table></figure></p>
+<p> 为什么会是<code>04 00 00 00</code>和<code>05 00 00 00</code>呢，而不是<code>00 00 00 04</code>和<code>00 00 00 o5</code>,这个就要考虑<a href="https://baike.baidu.com/item/大小端模式/6750542?fromtitle=大端小端&amp;fromid=15925891&amp;fr=aladdin" target="_blank" rel="noopener">大端小端</a></p>
+<p>但是为什么会是16个字节呢？因为int类型占用4个字节，两个int类型8个字节，一个isa占8个字节，因为刚刚占满16个字节，对象就没在开辟新的空间</p>
+<p>如果多一个height会占用几个字节呢？</p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印2">
+<p>答案是占用32个字节。</p>
+<p>其实这又要提到一个新的知识点了<code>内存对齐</code>,我们知道OC对象就是C++结构体，<code>而结构体的大小必须是最大成员大小的倍数</code>，当在多了一个<code>height</code>以后，内存不够用了，然后就需要扩展了。</p>
+<p><strong>如果是这样呢，占用内存是多少</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">@interface Person : NSObject&#123;</span><br><span class="line">@public</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Person</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@interface Student : Person&#123;</span><br><span class="line">@public</span><br><span class="line">int _height;</span><br><span class="line">&#125;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation Student</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p><code>Student</code>继承自<code>Person</code></p>
+<img src="/2018/12/20/1-一个NSObject对象占用多少内存/Student内存打印2.png" title="Student内存打印">
+<p>我们生成C++代码<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">struct Person_IMPL Person_IVARS;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct Person_IMPL &#123;</span><br><span class="line">struct NSObject_IMPL NSObject_IVARS;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct NSObject_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>整理一下就是这样<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">struct Student_IMPL &#123;</span><br><span class="line">Class isa;</span><br><span class="line">int _number;</span><br><span class="line">int _age;</span><br><span class="line">int _height;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/11/缘分/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/11/缘分/" itemprop="url">缘分</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T10:05:25+08:00">
+                2018-12-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
+                    <span itemprop="name">心灵鸡汤</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>什么是缘分？<br>人与人之间的相遇与相知，既是偶然，也是必然。这种看不见的命数，这种种琢磨不透的因由，理不清，剪不断，就是缘分。</p>
+<p>缘分，是一种相遇。<br>在茫茫人海中，没有早一步，也没有晚一步，就这么遇到了彼此，这就是缘分。<br>人生中所有的遇见，上至父母下至路人，都是一种缘分。有的缘分很浅，只是眼神交汇最后擦肩而过；有的缘分很深，还会有长久的相知相伴；有的缘分很美好，会带给你快乐和幸福；有的缘分很痛苦，让你经受挫折和心碎。<br>爱你的人，让你温暖，伤你的人，让你成长，路过的人，丰富了你的生命。遇到什么，不是我们能决定的，但所有的缘分，都有意义。</p>
+<p>缘分，也是一种重逢。<br>在漫长的人生路上，即便被时间冲淡了，被生活冲散了，最后还能重聚，这就是缘分。<br>人生最美是相遇，最难得是重逢。同窗苦读的同学，多年不见的老友，一直放在心里的恋人，再次相见，心中总是涌动着万千感慨，轻轻道一声“好久不见”。也曾有过矛盾，发生过不快，如今都被时间沉淀，留下的都是美好的回忆。<br>穿越重重人潮和漫漫时光，再见故人，是人生一大幸事。</p>
+<p>缘分，更是一种珍惜。<br>一辈子，最难预料的是遇见，不知道哪一眼就是开始；最难揣测的是离别，不知道哪一面，就是后会无期。<br>我们只是尘世间一粒微小的尘埃，随缘飞舞，又随缘落去。缘分来的时候，别回避，人生苦短，错过一时也许就错过了一世。缘分走的时候，别强求，不是你的，再怎么不放手也迟早会溜走。<br>其实，所有的相遇只是个开始，唯有珍惜才能长久。不在乎的人，早晚走散，不珍惜的缘，注定没有好结果。<br>多回头看看，还有多少人一直留在身边；记得用心数数，还有几份情坚持着不离散。<br>缘分没有好坏，只有珍惜与否。最美好不过，用随缘的心态，珍惜有缘之人，过好这缘的一生。</p>
+<p>摘自：<a href="https://baijiahao.baidu.com/s?id=1596416058572018324&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1596416058572018324&amp;wfr=spider&amp;for=pc</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/11/错误/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/11/错误/" itemprop="url">错误</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-11T09:16:20+08:00">
+                2018-12-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
+                    <span itemprop="name">心灵鸡汤</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="错误"><a href="#错误" class="headerlink" title="错误"></a>错误</h3><p>郑愁予</p>
+<p>我打江南走过<br>那等在季节里的容颜如莲花的开落<br>东风不来，三月的柳絮不飞<br>你的心如小小的寂寞的城<br>恰若青石的街道向晚<br>跫音不响，三月的春帷不揭<br>你底心是小小的窗扉紧掩<br>我达达的马蹄声是美丽的错误<br>我不是归人，是个过客……<br><img src="/2018/12/11/错误/poem_mistake.JPEG" title="独依望江楼，过尽千帆皆不是"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/07/天真的预言/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/07/天真的预言/" itemprop="url">天真的预言</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-07T16:42:46+08:00">
+                2018-12-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
+                    <span itemprop="name">心灵鸡汤</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h4 id="Auguries-of-Innocence"><a href="#Auguries-of-Innocence" class="headerlink" title="Auguries of Innocence"></a>Auguries of Innocence</h4><p>To see a world in a grain of sand<br>And a heaven in a wild flower,<br>Hold infinity in the palm of your hand<br>And eternity in an hour.</p>
+<h5 id="经典译文"><a href="#经典译文" class="headerlink" title="经典译文:"></a>经典译文:</h5><h5 id="天真的预言"><a href="#天真的预言" class="headerlink" title="天真的预言"></a>天真的预言</h5><hr>
+<p>一沙一世界，<br>一花一天堂。<br>双手握无限，<br>刹那是永恒。<br>一沙一世界，<br>一花一天堂，<br>一树一菩提，<br>一叶一如来。<br>天真的预言，<br>参悟千年的偈语。<br>一粒沙里见世界，<br>一朵花里见天堂，<br>手掌里盛住无限，<br>一刹那便是永劫。<br>——丰子恺</p>
+<hr>
+<p>一颗沙里看出一个世界，<br>一朵野花里一座天堂，<br>把无限放在你的手掌上，<br>永恒在一刹那里收藏。<br>——梁宗岱 译</p>
+<hr>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/06/iOS签名机制04/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -726,1210 +1931,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/心灵鸡汤01/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/心灵鸡汤01/" itemprop="url">心灵鸡汤01</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T16:16:57+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/心灵鸡汤/" itemprop="url" rel="index">
-                    <span itemprop="name">心灵鸡汤</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>你为什么要那么努力？<br>因为我喜欢的东西都很贵，我想去的地方都很远，我爱的人超完美。</p>
-<hr>
-<p>喜欢的东西就努力去争取，因为能喜欢的人和事，本来就不多。</p>
-<hr>
-<p>再努力一点，见想见的人，做想做的事。</p>
-<hr>
-<p>Death is what gives life meaning.To know your days are numbered.Your time is short.(死亡赋予生命意义，让你知道时光短暂，去日无多)-《奇异博士》</p>
-<hr>
-<p>生命中充满了太多的不确定，所以要抓紧时间做自己最想做的事情，在我们没有机会之前。。—-《时光情书》</p>
-<hr>
-<p>在等待的日子里，刻苦读书，谦卑做人，养得深根，日后才能枝叶茂盛。</p>
-<hr>
-<p>愿少年在征途后 回眸时 </p>
-<p>眼有星辰大海 </p>
-<p>胸有丘壑万千 </p>
-<p>心有繁花似锦</p>
-<hr>
-<p>每一个优秀的人，都有一段沉默的时光。那一段时光，是付出了很多努力，忍受了很多的孤独和寂寞，不抱怨不诉苦，只有自己知道。而当日后说起时，连自己都能被感动的日子。</p>
-<hr>
-<p>人最大的魅力，是有一颗阳光的心态。韶华易逝，容颜易老，浮华终是云烟。拥抱一颗阳光的心态，得失了无忧，来去都随缘。心无所求，便不受万象牵绊；心无牵绊，坐也从容，行也从容，故生优雅。一个优雅的人，养眼又养心，才是魅力十足的人。容貌乃天成，浮华在身外，心里满是阳光，才是永恒的美</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/iOS签名机制02/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/iOS签名机制02/" itemprop="url">iOS签名机制02</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T11:39:56+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>密钥配送问题</p>
-<ul>
-<li>分配中心</li>
-<li>公钥密码（非对称密码）：<ul>
-<li>加密密钥，一般是公开的，因此该密钥成为公钥</li>
-<li>解密密钥，由消息接收者自己保管，不能公开，因此也称为私钥</li>
-<li>公钥和私钥是一一对应的，是不能单独生成的，一对公钥和私钥统称为密钥对</li>
-<li>由公钥加密的密文，必须使用与该公钥对应的私钥才能解密</li>
-<li>由私钥加密的密文，必须使用与该私钥对应的公钥才能解密</li>
-</ul>
-</li>
-</ul>
-<p>解决密钥配送问题</p>
-<ul>
-<li>由消息的接收者，生成一对公钥、私钥</li>
-<li>将公钥发给消息的发送者</li>
-<li>消息的发送者使用公钥加密消息</li>
-</ul>
-<p>RSA</p>
-<ul>
-<li>目前使用最广泛的公钥密码算法是RSA</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/03/iOS签名机制01/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/12/03/iOS签名机制01/" itemprop="url">iOS签名机制01</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-03T11:39:47+08:00">
-                2018-12-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/iOS/" itemprop="url" rel="index">
-                    <span itemprop="name">iOS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h4 id="iOS签名机制"><a href="#iOS签名机制" class="headerlink" title="iOS签名机制"></a>iOS签名机制</h4><p>密码的类型：<br>根据密钥的使用方法，可以将密码分为2种</p>
-<ul>
-<li>对称密码</li>
-<li>公钥密码（非对称密码）<br>在对称密码中，加密、解密时使用的是同一个密钥<br>常见的对称密码算法有：<ul>
-<li>DES<ul>
-<li>DES是一种将64bit明文加密成64bit密文的对称密码算法，密钥长度是56bit</li>
-<li>规格上来说，密钥长度是64bit，但每隔7bit会设置一个用于错误检查的bit，因此密钥长度实质上是56bit</li>
-<li>由于DES每次只能加密64bit的数据，遇到比较大的数据，需要对DES加密进行迭代（反复）</li>
-<li>目前已经可以在短时间内破解，所以不建议使用</li>
-</ul>
-</li>
-<li>3DES<ul>
-<li>将DES重复3次所得到的一种密码算法，也叫做3重DES</li>
-<li>目前还被一些银行等机构使用，但处理速度不高，安全性逐渐暴露出问题</li>
-</ul>
-</li>
-<li>AES<ul>
-<li>取代DES成为新标准的一种对称密码算法</li>
-<li>AES的密钥长度有128、192、256bit三种</li>
-<li>在2000年时选择Rijindael算法作为AES的实现</li>
-<li>目前AES，已经逐步取代DES、3DES，成为首选的对称密码算法</li>
-<li>一般来说，我们也不应该去使用任何自制的密码算法，而是使用AES，它经过了全世界密码学家所进行的高品质验证工作</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/08/音视频入门学习笔记-6-视频编码与视频格式的区别和联系/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/08/音视频入门学习笔记-6-视频编码与视频格式的区别和联系/" itemprop="url">音视频入门学习笔记(6)视频编码与视频格式的区别和联系</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T14:44:49+08:00">
-                2018-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/音视频/" itemprop="url" rel="index">
-                    <span itemprop="name">音视频</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>视频编码是一种压缩技术，就是把原始的视频流压缩成特定的比特流（视编码方案）。视频格式是一种封装格式，就是把编码后的比特流进行封装，不同的视频格式封装方法不同。打个比方，原始的模拟视频采用MPEG2数字化编码后，你可以采用TS流格式封装成TS流文件，也可以采用PS流格式封装成PS流文件，选择权在于你，TS流是称为实时流，他把视频信息分成很多很小的包，损坏了一个包，你解码回放时只是看不见一小部分（例如出现马赛克），但是PS流是文件流，文件损害的话，整个文件都看不了了。再形象的说，一段视频资源用TS流封装就是把这段视频切成10个部分，放到10个盒子里，一个盒子一个盒子的按照顺序打开，你就能看完这段视频；而PS流式把整个视频放到1个盒子里，它会自动按照顺序播放出来给您观看；如果有一个盒子坏了，TS流可以看到9个盒子，PS你就都看不见了。</p>
-<p>其实如何对应都是各个厂家用来控制市场的一种方式而已，有编就有解，我编的，你必须用我的方式来解，不然你就看不了我的图像了，当然某些程度上这些私有标准也是具有技术含量的，他们能在一定程度上提高视频编码的效率或者提高画质等。<br>国际上标准的视频编码格式目前只有MPEG2/MPEG4/H.264/MJPEG这几种，所以其他的编码格式都是各个厂家的私有编码（例如微软的DIVX、real公司的RM系列等）<br>对应可以如下<br>（封装格式：编码格式）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AVI：MPEG-2，DIVX，XVID，AC-1，H.264;</span><br><span class="line">WMV：WMV，AC-1;</span><br><span class="line">RM、RMVB：RV， RM;</span><br><span class="line">MOV：MPEG-2，XVID，H.264;</span><br><span class="line">TS/PS：MPEG-2，H.264，MPEG-4;</span><br><span class="line">MKV：可以封装所有的视频编码格式。</span><br></pre></td></tr></table></figure></p>
-<p>常见的高清视频编码和封装格式<br>回答：<br>高清编码基本采用AC-1、MPEG2、H.264<br>目前高清对应于封装如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AVI：AC-1、MPEG2、H.264</span><br><span class="line">TS/PS：MPEG-2，H.264;</span><br><span class="line">MKV：AC-1、MPEG2、H.264</span><br></pre></td></tr></table></figure></p>
-<p>高清的和普清的一样，没啥大的区别，如果REAL公司要做高清的编码一样可以做出来，只不过它的市场不在那一块而已 。</p>
-<p>来源：CSDN<br>原文：<a href="https://blog.csdn.net/oney139/article/details/6273525" target="_blank" rel="noopener">https://blog.csdn.net/oney139/article/details/6273525</a> </p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/08/音视频入门学习笔记-5-视频格式那么多，MP4-RMVB-MKV-AVI-等，这些视频格式与编码压缩标准-mpeg4，H-264-H-265等有什么关系/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/08/音视频入门学习笔记-5-视频格式那么多，MP4-RMVB-MKV-AVI-等，这些视频格式与编码压缩标准-mpeg4，H-264-H-265等有什么关系/" itemprop="url">音视频入门学习笔记(5)视频格式那么多，MP4-RMVB-MKV-AVI-等，这些视频格式与编码压缩标准-mpeg4，H-264-H-265等有什么关系</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T11:42:30+08:00">
-                2018-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/音视频/" itemprop="url" rel="index">
-                    <span itemprop="name">音视频</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>通过引入下面三个概念来介绍视频压缩知识。分别是：视频文件格式（简称：文件格式），视频封装格式（简称：视频格式），视频编码方式（简称：视频编码）</p>
-<p><strong>一，视频文件格式（简称：文件格式）</strong>：我们知道Windows系统中的文件名都有后缀，例如1.doc，2.wps，3.psd等等。Windows设置后缀名的目的是让系统中的应用程序来识别并关联这些文件，让相应的文件由相应的应用程序打开。例如你双击1.doc文件，它会知道让Microsoft Office去打开，而不会用Photoshop去打开这个文件。所以常见的视频文件格式如1.avi，2.mpg这些都叫做视频的文件格式，它由你电脑上安装的视频播放器关联。你可以随意改扩展名，但是真的对视频一点影响都没有，千万不要以为 avi 改成 mp4，视频就变成 mp4 格式了。</p>
-<p><strong>二、视频封装格式（简称：视频格式）</strong>：AVI，MPEG，VOB是一种视频封装格式，相当于一种储存视频信息的容器。它是由相应的公司开发出来的。我们可以在自己的电脑上看到的1.avi，2.mpg，3.vob这些视频文件格式的后缀名即采用相应的视频封装格式的名称。以下集中介绍几种封装格式：</p>
-<p><strong>1，AVI格式（后缀为.AVI）</strong>：它的英文全称为Audio Video Interleaved，即<a href="https://baike.baidu.com/item/音频视频交错格式" target="_blank" rel="noopener">音频视频交错格式</a>。它于1992年被Microsoft公司推出。</p>
-<p>这种视频格式的优点是图像质量好。由于无损AVI可以保存alpha通道，经常被我们使用。缺点太多，体积过于庞大，而且更加糟糕的是压缩标准不统一，最普遍的现象就是高版本Windows媒体播放器播放不了采用早期编码编辑的AVI格式视频，而低版本Windows媒体播放器又播放不了采用最新编码编辑的AVI格式视频，所以我们在进行一些AVI格式的视频播放时常会出现由于<a href="https://baike.baidu.com/item/视频编码" target="_blank" rel="noopener">视频编码</a>问题而造成的视频不能播放或即使能够播放，但存在不能调节播放进度和播放时只有声音没有图像等一些莫名其妙的问题。</p>
-<p><strong>2，DV-AVI格式（后缀为.AVI）</strong>：DV的英文全称是Digital Video Format，是由索尼、松下、JVC等多家厂商联合提出的一种家用数字视频格式。</p>
-<p>数字摄像机就是使用这种格式记录视频数据的。它可以通过电脑的IEEE 1394端口传输视频数据到电脑，也可以将电脑中编辑好的的视频数据回录到数码摄像机中。这种视频格式的文件扩展名也是avi。电视台采用录像带记录模拟信号，通过EDIUS由IEEE 1394端口采集卡从录像带中采集出来的视频就是这种格式。</p>
-<p><strong>3，QuickTime File Format格式（后缀为.MOV）</strong>：美国Apple公司开发的一种视频格式，默认的播放器是苹果的QuickTime。具有较高的压缩比率和较完美的视频清晰度等特点，并可以保存alpha通道。大家可能注意到了，每次安装EDIUS，我们都要安装苹果公司推出的QuickTime。安装其目的就是为了支持JPG格式图像和MOV视频格式导入。<br>4，<strong>MPEG格式（文件后缀可以是 .MPG .MPEG .MPE .DAT .VOB .ASF .3GP .MP4等）</strong>：它的英文全称为Moving Picture Experts Group，即运动图像专家组格式，该专家组建于1988年，专门负责为CD建立视频和音频标准，而成员都是为视频、音频及系统领域的技术专家。</p>
-<p>MPEG文件格式是运动图像压缩算法的国际标准。MPEG格式目前有三个压缩标准，分别是MPEG－1、MPEG－2、和MPEG－4。MPEG－1、MPEG－2目前已经使用较少，着重介绍MPEG－4，其制定于1998年，MPEG－4是为了播放流式媒体的高质量视频而专门设计的，以求使用最少的数据获得最佳的图像质量。目前MPEG-4最有吸引力的地方在于它能够保存接近于DVD画质的小体积视频文件。你可能一定注意到了，怎么没有MPEG－3编码，因为这个项目原本目标是为高分辨率电视设计，随后发现MPEG-2已足够HDTV应用，故MPEG-3的研发便中止（百度百科说MPEG－3就是mp3，我认为这个说法并不准确。）。</p>
-<p><strong>5，WMV格式（后缀为.WMV .ASF）</strong>：它的英文全称为Windows Media Video，也是微软推出的一种采用独立编码方式并且可以直接在网上实时观看视频节目的文件压缩格式。</p>
-<p>WMV格式的主要优点包括：本地或网络回放,丰富的流间关系以及扩展性等。WMV格式需要在网站上播放，需要安装Windows Media Player（简称WMP），很不方便，现在已经几乎没有网站采用了。<br><strong>6，Real Video格式（后缀为.RM .RMVB）</strong>：Real Networks公司所制定的音频视频压缩规范称为Real Media。</p>
-<p>用户可以使用RealPlayer根据不同的网络传输速率制定出不同的压缩比率，从而实现在低速率的网络上进行影像数据实时传送和播放。RMVB格式：这是一种由RM视频格式升级延伸出的新视频格式，当然性能上有很大的提升。RMVB视频也是有着较明显的优势，一部大小为700MB左右的DVD影片，如果将其转录成同样品质的RMVB格式，其个头最多也就400MB左右。大家可能注意到了，以前在网络上下载电影和视频的时候，经常接触到RMVB格式，但是随着时代的发展这种格式被越来越多的更优秀的格式替代，著名的人人影视字幕组在2013年已经宣布不再压制RMVB格式视频。<br><strong>7，Flash Video格式（后缀为.FLV）</strong>：由Adobe Flash延伸出来的的一种流行网络视频封装格式。随着视频网站的丰富，这个格式已经非常普及。<br><strong>8，Matroska格式（后缀为.MKV）</strong>：是一种新的多媒体封装格式，这个封装格式可把多种不同编码的视频及16条或以上不同格式的音频和语言不同的字幕封装到一个Matroska Media档内。它也是其中一种开放源代码的多媒体封装格式。Matroska同时还可以提供非常好的交互功能，而且比MPEG的方便、强大。 </p>
-<p><strong>常用视频格式及对应的文件格式</strong></p>
-<p><img src="https://upload-images.jianshu.io/upload_images/2333461-839c8a0d9fb26703.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="视频格式及对应的文件格式.jpg"></p>
-<p><strong>三，视频编码方式（简称：视频编码）</strong>：所谓视频编码方式就是指能够对数字视频进行压缩或者解压缩（视频解码）的程序或者设备。通常这种压缩属于有损数据压缩。也可以指通过过特定的压缩技术，将某个视频格式转换成另一种视频格式。常见的编码方式有：<br><strong>1，H.26X系列</strong>（由ITU[国际电传视讯联盟]主导）包括H.261、H.262、H.263、H.264、H.265。</p>
-<ul>
-<li>H.261：主要在老的视频会议和视频电话产品中使用。</li>
-<li>H.263：主要用在视频会议、视频电话和网络视频上。 </li>
-<li>H.264：H.264/MPEG-4第十部分，或称AVC（Advanced Video Coding，高级视频编码），是一种视频压缩标准，一种被广泛使用的高精度视频的录制、压缩和发布格式。</li>
-<li>H.265：高效率视频编码（High Efficiency Video Coding，简称HEVC）是一种视频压缩标准，H.264/MPEG-4 AVC的继任者。HEVC被认为不仅提升图像质量，同时也能达到H.264/MPEG-4 AVC两倍之压缩率（等同于同样画面质量下比特率减少了50%），可支持4K分辨率甚至到超高画质电视，最高分辨率可达到8192×4320（8K分辨率），这是目前发展的趋势。直至2013年，Potplayer添加了对于H.265视频的解码，尚未有大众化编码软件出现。<br><strong>2，MPEG系列</strong>（由ISO[国际标准组织机构]下属的MPEG[运动图象专家组]开发 ）</li>
-</ul>
-<blockquote>
-<p>总之，即使是同一种视频文件格式，如*.MPG。又分为MPEG-1，MPEG-2 ，MPEG-4几种不同的视频封装格式，就算是同一种视频封装格式，如MPEG-4又可以使用多种视频编码方式。视频的编码形式才是一个视频文件的本质所在，不要简单的通过文件格式和封装形式来区分视频。</p>
-</blockquote>
-<p>援引自：<a href="http://www.zhihu.com/question/20997688" target="_blank" rel="noopener">http://www.zhihu.com/question/20997688</a></p>
-<p>雷神总结：<a href="https://blog.csdn.net/leixiaohua1020/article/details/11842919" target="_blank" rel="noopener">https://blog.csdn.net/leixiaohua1020/article/details/11842919</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/08/音视频入门学习笔记-4-视频播放过程及视频文件格式/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/08/音视频入门学习笔记-4-视频播放过程及视频文件格式/" itemprop="url">音视频入门学习笔记(4)视频播放过程及视频文件格式</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T11:31:19+08:00">
-                2018-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/音视频/" itemprop="url" rel="index">
-                    <span itemprop="name">音视频</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p> 具体视频文件格式详解：  </p>
-<ul>
-<li>. MPEG/.MPG/.DAT   <blockquote>
-<p>MPEG也是Motion Picture Experts Group的缩写。这类格式包括了MPEG-1, MPEG-2和 MPEG-4在内的多种视频格式。MPEG-1相信是大家接触得最多的了，因为目前其正在被广泛地应用在VCD的制作和一些视频片段下载的网络应用上面，大部分的VCD都是用 MPEG1格式压缩的( 刻录软件自动将MPEG1转为.DAT格式)，使用 MPEG-1的压缩算法，可以把一部 120 分钟长的电影压缩到1.2 GB 左右大小。MPEG-2则是应用在DVD 的制作，同时在一些HDTV（高清晰电视广播）和一些高要求视频编辑、处理上面也有相当多的应用。使用MPEG-2的压缩算法压缩一部 120 分钟长的电影可以压缩到 5-8 GB的大小（MPEG2的图像质量MPEG-1与其无法比拟的）。 </p>
-</blockquote>
-</li>
-</ul>
-<ul>
-<li><p>.AVI   </p>
-<blockquote>
-<p>它的英文全称为Audio Video Interleaved，即音频视频交错格式。是将语音和影像同步组合在一起的文件格式。它对视频文件采用了一种有损压缩方式，但压缩比较高，因此尽管面面质量不是太好，但其应用范围仍然非常广泛。AVI支持256色和RLE压缩。AVI信息主要应用在多媒体光盘上，用来保存电视、电影等各种影像信息。它于1992年被Microsoft公司推出，随Windows3.1一起被人们所认识和熟知。所谓“音频视频交错”，就是可以将视频和音频交织在一起进行同步播放。这种视频格式的优点是图像质量好，可以跨多个平台使用，其缺点是体积过于庞大，而且更加糟糕的是压缩标准不统一，最普遍的现象就是高版本Windows媒体播放器播放不了采用早期编码编辑的AVI格式视频，而低版本Windows媒体播放器又播放不了采用最新编码编辑的AVI格式视频，所以我们在进行一些AVI格式的视频播放时常会出现由于视频编码问题而造成的视频不能播放或即使能够播放，但存在不能调节播放进度和播放时只有声音没有图像等一些莫名其妙的问题，如果用户在进行AVI格式的视频播放时遇到了这些问题，可以通过下载相应的解码器来解决。是目前视频文件的主流。 这种格式的文件随处可见，比如一些游戏、教育软件的片头，多媒体光盘中，都会有不少的 AVI 。现在，在WINDOWS 95或98里都能直接播放AVI，同一种格式的avi文件有可能采用不同的编码方式，最常见的有Intel Indeo（R）Video R3.2（像游戏过场动画等，是目前使用最广泛的一种avi编码技术）、Microsoft video 等。 </p>
-</blockquote>
-</li>
-<li><p>.RA/RM/RAM   </p>
-<blockquote>
-<p>.RM，Real Networks公司所制定的音频/视频压缩规范Real Media中的一种，Real Player能做的就是利用Internet资源对这些符合Real Media技术规范的音频/视频进行实况转播。在Real Media规范中主要包括三类文件：RealAudio、Real Video和Real Flash（Real Networks公司与Macromedia公司合作推出的新一代高压缩比动画格式）。REAL VIDEO（RA、RAM）格式由一开始就是定位就是在视频流应用方面的，也可以说是视频流技术的始创者。它可以在用56K MODEM 拨号上网的条件实现不间断的视频播放，从RealVideo的定位来看，就是牺牲画面质量来换取可连续观看性。其实RealVideo也可以实现不错的画面质量，由于RealVideo可以拥有非常高的压缩效率，很多人把VCD编码成RealVideo格式的，这样一来，一张光盘上可以存放好几部电影。REAL VIDEO存在颜色还原不准确的问题，RealVideo就不太适合专业的场合，但RealVideo出色的压缩效率和支持流式播放的特征，使得RealVideo在网络和娱乐场合占有不错的市场份额。 </p>
-</blockquote>
-</li>
-<li><p>.MOV   </p>
-<blockquote>
-<p>MOV格式，美国Apple公司开发的一种视频格式，默认的播放器是苹果的QuickTimePlayer。具有较高的压缩比率和较完美的视频清晰度等特点，但是其最大的特点还是跨平台性，即不仅能支持MacOS，同样也能支持Windows系列,在所有视频格式当中，也许MOV格式是最不知名的。也许你会听说过QuickTime，MOV格式的文件正是由它来播放的。在PC几乎一统天下的今天，从Apple移植过来的MOV格式自然是受到排挤的。它具有跨平台、存储空间要求小的技术特点，而采用了有损压缩方式的MOV格式文件，画面效果较AVI格式要稍微好一些。到目前为止，它共有4个版本，其中以 4.0 版本的压缩率最好。这种编码支持16位图像深度的帧内压缩和帧间压缩，帧率每秒10帧以上。现在这种格式有些非编软件也可以对它时行处理，其中包括ADOBE公司的专业级多媒体视频处理软件AFTEREFFECT和PREMIERE。 *.ASF  ASF (Advanced Streaming format高级流格式)。ASF是MICROSOFT 为了和现在的 Real player 竞争而发展出来的一种可以直接在网上观看视频节目的文件压缩格式。ASF使用了MPEG4的压缩算法，压缩率和图像的质量都很不错。因为ASF是以一个可以在网上即时观赏的视频“流”格式存在的，所以它的图像质量比VCD差一点点并不出奇，但比同是视频“流”格式的RAM格式要好。 ASF支持任意的压缩/解压缩编码方式，并可以使用任何一种底层网络传输协议，具有很大的灵活性。ASF流文件的数据速率可以在28.8Kbps到3Mbps之间变化。用户可以根据自己应用环境和网络条件选择一个合适的速率，实现VOD点播和直播。 </p>
-</blockquote>
-</li>
-<li>.WMV  <blockquote>
-<p>WMV是微软推出的一种流媒体格式，它是ASF的升级延伸，在同等视频质量下，WMV格式的体积非常小，因此很适合在网上播放和传输。微软希望用其取代QuickTime之类的技术标准以及WAV、AVI之类的文件扩展名。WMV的主要优点在于：可扩充的媒体类型、本地或网络回放、可伸缩的媒体类型、流的优先级化、多语言支持、扩展性等。 </p>
-</blockquote>
-</li>
-<li>.NAVI   <blockquote>
-<p>如果你发现原来的播放软件突然打不开此类格式的AVI文件，那你就要考虑是不是碰到了n AVI。n AVI是New AVI 的缩写，是一个名为Shadow Realm的地下组织发展起来的一种新视频格式。它是由Microsoft ASF压缩算法的修改而来的（并不是想象中的AVI），视频格式追求的无非是压缩率和图像质量，所以NAVI为了追求这个目标，改善了原始的ASF格式的一些不足，让 NAVI 可以拥有更高的帧率。可以这样说，NAVI是一种去掉视频流特性的改良型ASF格式。 - .FLV<br>FLV 是 FLASH VIDEO的简称，是由Macromedia公司开发的属于自己的流式视频格式。FLV也就是随着Flash MX的推出发展而来的视频格式，是在sorenson公司的压缩算法的基础上开发出来的。FLV格式不仅可以轻松的导入Flash中，速度极快，并且能其到保护版权的作用，并且可以不通过本地的微软或者REAL播放器播放视频。Flash MX 2004对其提供了完美的支持，它的出现有效地解决了视频文件导入Flash后，使导出的SWF文件体积庞大，不能在网络上很好的使用等缺点。由于它形成的文件极小、加载速度极快，使得网络观看视频文件成为可能，它的出现有效地解决了视频文件导入Flash后，使导出的SWF文件体积庞大，不能在网络上很好的使用等缺点。</p>
-</blockquote>
-</li>
-</ul>
-<p>摘自：<a href="http://blog.csdn.net/fenglinfeiye/article/details/5608295" target="_blank" rel="noopener">http://blog.csdn.net/fenglinfeiye/article/details/5608295</a></p>
-<p>介绍：视频播放过程</p>
-<p>首先简单介绍以下视频文件的相关知识。我们平时看到的视频文件有许多格式，比如 avi， mkv， rmvb， mov， mp4等等，这些被称为<a href="http://en.wikipedia.org/wiki/Digital_container_format" target="_blank" rel="noopener">容器</a>（<a href="http://wiki.multimedia.cx/index.php?title=Category:Container_Formats" target="_blank" rel="noopener">Container</a>）， 不同的容器格式规定了其中音视频数据的组织方式（也包括其他数据，比如字幕等）。容器中一般会封装有视频和音频轨，也称为视频流（stream）和音频 流，播放视频文件的第一步就是根据视频文件的格式，解析（demux）出其中封装的视频流、音频流以及字幕（如果有的话），解析的数据读到包 （packet）中，每个包里保存的是视频帧（frame）或音频帧，然后分别对视频帧和音频帧调用相应的解码器（decoder）进行解码，比如使用 H.264编码的视频和MP3编码的音频，会相应的调用H.264解码器和MP3解码器，解码之后得到的就是原始的图像(YUV or RGB)和声音(PCM)数据，然后根据同步好的时间将图像显示到屏幕上，将声音输出到声卡，最终就是我们看到的视频。</p>
-<img src="/2018/11/08/音视频入门学习笔记-4-视频播放过程及视频文件格式/videoaudio04_1.png" title="解码显示流程">
-<p>封装格式</p>
-<pre><code>作用：视频码流和音频码流按照一定的格式储存在一个文件汇总
-</code></pre><p>视频编码数据</p>
-<pre><code>作用：将视频像素数据（RGB，YUV等）压缩成为视频码流，从而降低视频的数据量
-</code></pre><p>音频编码数据</p>
-<pre><code>作用：将音频采样数据（PCM等）压缩成为音频码流，从而降低音频的数据量
-</code></pre><p>视频像素数据</p>
-<pre><code>作用：保存了屏幕上每一个像素点的像素值
-
-格式：常见的像素数据格式有RGB24, RGB32,YUV420P,YUV422P,YUV444P等。压缩编码中一般使用的是YUV格式的像素数据,最为常见的格式YUV420P。
-
-特点：视频像素数据体积很大，一般情况下一小时高清视频的RGB24格式的数据体积为：3600*25*1920*1080*3=559.9GB（PS：这里假定帧率为25HZ，取样精度8bit）
-</code></pre><p>音频采样数据</p>
-<pre><code>作用：保存了音频中每个采样点的值。
-
-特点：音频采样数据体积很大,一般情况下一首4分钟的PCM格式的歌曲体积为: 4*60*44100*2*2=42.3MByte
-           PS:这里假定采样率为44100Hz,采样精度为16bit
-</code></pre><p>参考博客：雷神<a href="https://blog.csdn.net/leixiaohua1020/article/details/50535082" target="_blank" rel="noopener">https://blog.csdn.net/leixiaohua1020/article/details/50535082</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/08/音视频入门学习笔记-3-帧率-分辨率-码流的关系/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="NSLegend">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/headIcon.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="个人博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/08/音视频入门学习笔记-3-帧率-分辨率-码流的关系/" itemprop="url">音视频入门学习笔记(3)帧率-分辨率-码流的关系</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-08T11:27:09+08:00">
-                2018-11-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
-                  <a href="/categories/音视频/" itemprop="url" rel="index">
-                    <span itemprop="name">音视频</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>帧率 分辨率 码流的关系:</code>     </p>
-<pre><code>  帧率、码流与分辨率  帧率是每秒图像的数量，分辨率表示每幅图像的尺寸即像素数量，码流是经过视频压
-缩后每秒产生的数据量，而压缩是去掉图像的空间冗余和视频的时间冗余，所以，对于静止的场景，可以用
-很低的码流获得较好的图像质量，而对于剧烈运动的场景，可能用很高的码流也达不到好的图像质量，所以
-结论是设置帧率表示您要的实时性，设置分辨率是您要看的图像尺寸大小，而码率的设置取决于摄像机及场景
-的情况，通过现场调试，直到取得一个可以接受的图像质量，就可以确定码流大小。   
-
-  帧率概念  一帧就是一副静止的画面，连续的帧就形成动画，如电视图象等。我们通常说帧数，简单地说，
-就是在1秒钟时间里传输的图片的帧数，也可以理解为图形处理器每秒钟能够刷新几次，通常用fps（Frames Per Second）   
-表示。每一帧都是静止的图象，快速连续地显示帧便形成了运动的假象。高的帧率可以得到更流畅、更逼真
-的动画。每秒钟帧数 (fps) 愈多，所显示的动作就会愈流畅。  
-
- 码流概念  码流（Data Rate），是指视频文件在单位时间内使用的数据流量，也叫码率，是他是视频编码中
-画面质量控制中最重要的部分。同样分辨率下，视频文件的码流越大，压缩比就越小，画面质量就越高。   
-
-  分辨率概念  视频分辨率是指视频成像产品所成图像的大小或尺寸。常见的视像分辨率有352×288，176×144，
-640×480，1024×768。在成像的两组数字中，前者为图片长度，后者为图片的宽度，两者相乘得出的是图片
-的像素，长宽比一般为4：3。 
-
-  同样分辨率下，视频文件的码流越大，压缩比就越小，画面质量就越高。    
-  在PAL制情况下：  CIF 352×288的分辨率，建议码流设置为512kbps，用0.5M的带宽传输  4CIF 704×576
-的分辨率，建议码流设置为2048kbps，用2M的带宽传输，但是使用1536bps也可。    
-  第一步：根据式（1）计算单个通道每小时所需要的存储容量S1 , 单位MByte。                         
-   S1=D / 8 * 3600 / 1024   
-  其中：D－ 码率（即录像设置中的“位率/位率上限”），单位Kbit/s   
-  第二步：确定录像时间要求后，根据式（2）计算单个通道所需要的存储容量S2, 单位MByte
-   S2=S1 * 24 * t 
-  其中：t为保存天数 24表示一天24小时录像  第二步：确定视频通道数 计算最终所需容量S3 S3=S2 *N 
-  其中：N为视频通道数
-</code></pre><p><code>视频码率,帧率和分辨率到底哪一个影响电影的清晰度 :</code> </p>
-<pre><code>  码率：影响体积，与体积成正比：码率越大，体积越大；码率越小，体积越小。  码率就是数据传输时单位
-时间传送的数据位数,一般我们用的单位是kbps即千位每秒。也就是取样率（并不等同与采样率，采样率的单位是Hz，
-表示每秒采样的次数），单位时间内取样率越大，精度就越高，处理出来的文件就越接近原始文件，但是文件体积
-与取样率是成正比的，所以几乎所有的编码格式重视的都是如何用最低的码率达到最少的失真，围绕这个核心
-衍生出来cbr（固定码率）与vbr（可变码率）， “码率”就是失真度，码率越高越清晰，反之则画面粗糙而多
-马赛克。   
-  下面是通过一个wav文件的采样率来计算码率和文件大小，通过MediaInfo工具显示的文件信息如下： 
-概要  完整名称  :audio\wav\adele-rolling_in_the_deep.wav
-     文件格式  : Wave 
-     文件大小  : 38.3 MiB 
-    长度   : 3分 47秒 
-     平均混合码率   : 1 411 Kbps   
-    音频  ID : 0 
-    文件格式  : PCM 
-    格式设置,Endianness      : Little
-     编码设置ID                          : 1
-     编码设置ID/提示信息         : Microsoft 
-    长度                                      : 3分 47秒 
-    码率                                      : 1 411.2 Kbps
-   声道                                     : 2声道 
-    采样率                                 : 44.1 KHz 
-    位深度                                 : 16位  大小                                     : 38.3 MiB (100%)    
-    1.码率计算公式：  码率=采样率 x 位深度 x 声道  所以，上面文件的码率= 44.1Khz x 16位 x 2声道 = 1411.2 Kbps 
-
-
-   2.文件大小 = 码率 x 时长 = 1411.2 Kbps x (3 x 60 + 47 )s = 1411.2Kbps x 227s  =38102.4 Kb  38102.4 Kb / 1024 Kb/M = 37.2M  近似等于mediainfo工具显示的文件大小38.3M。  注：此计算公式对未压缩的wav格式文件有效，不适用于mp3等被压缩的文件。   帧率：影响画面流畅度，与画面流畅度成正比：帧率越大，画面越流畅；帧率越小，画面越有跳动感。如果码率为变量，则帧率也会影响体积，帧率越高，每秒钟经过的画面越多，需要的码率也越高，体积也越大。  帧率就是在1秒钟时间里传输的图片的帧数，也可以理解为图形处理器每秒钟能够刷新几次，   分辨率：影响图像大小，与图像大小成正比：分辨率越高，图像越大；分辨率越低，图像越小。
-
-清晰度  在码率一定的情况下，分辨率与清晰度成反比关系：分辨率越高，图像越不清晰，分辨率越低，图像越清晰。  在分辨率一定的情况下，码率与清晰度成正比关系，码率越高，图像越清晰；码率越低，图像越不清晰。    带宽、帧率  例如在ADSL线路上传输图像，上行带宽只有512Kbps，但要传输4路CIF分辨率的图像。按照常规，CIF分辨率建议码率是512Kbps，那么照此计算就只能传一路，降低码率势必会影响图像质量。那么为了确保图像质量，就必须降低帧率，这样一来，即便降低码率也不会影响图像质量，但在图像的连贯性上会有影响。
-</code></pre>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1977,7 +1983,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">35</span>
+                  <span class="site-state-item-count">42</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2052,7 +2058,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
