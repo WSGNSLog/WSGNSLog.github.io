@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="iOS,">
 
 
 
@@ -79,17 +79,18 @@
 
 
 
-<meta name="description" content="Stay Hungry,Stay Foolish.">
+<meta name="description" content="iOS线程死锁结论：使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁） 首先你要理解同步和异步执行的概念，同步和异步目的不是为了是否创建一个新的线程，同步会阻塞当前函数的返回，异步函数会立即返回执行下面的代码；队列是一种数据结构，队列有FIFO,LIFO等，控制任务的执行顺序，至于是否开辟一个新的线程，因为同步函数会等待函数的返回，所以在当前线程执行就行了，没必要浪费资源再">
+<meta name="keywords" content="iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="9.6多线程">
 <meta property="og:url" content="http://yoursite.com/2018/12/26/9-6多线程/index.html">
 <meta property="og:site_name" content="个人博客">
-<meta property="og:description" content="Stay Hungry,Stay Foolish.">
+<meta property="og:description" content="iOS线程死锁结论：使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁） 首先你要理解同步和异步执行的概念，同步和异步目的不是为了是否创建一个新的线程，同步会阻塞当前函数的返回，异步函数会立即返回执行下面的代码；队列是一种数据结构，队列有FIFO,LIFO等，控制任务的执行顺序，至于是否开辟一个新的线程，因为同步函数会等待函数的返回，所以在当前线程执行就行了，没必要浪费资源再">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-12-26T02:36:10.253Z">
+<meta property="og:updated_time" content="2019-01-04T09:22:20.458Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="9.6多线程">
-<meta name="twitter:description" content="Stay Hungry,Stay Foolish.">
+<meta name="twitter:description" content="iOS线程死锁结论：使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁） 首先你要理解同步和异步执行的概念，同步和异步目的不是为了是否创建一个新的线程，同步会阻塞当前函数的返回，异步函数会立即返回执行下面的代码；队列是一种数据结构，队列有FIFO,LIFO等，控制任务的执行顺序，至于是否开辟一个新的线程，因为同步函数会等待函数的返回，所以在当前线程执行就行了，没必要浪费资源再">
 
 
 
@@ -292,6 +293,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -319,7 +342,27 @@
       
 
       
-        
+        <h2 id="iOS线程死锁"><a href="#iOS线程死锁" class="headerlink" title="iOS线程死锁"></a>iOS线程死锁</h2><p><strong>结论：使用sync函数往当前串行队列中添加任务，会卡住当前的串行队列（产生死锁）</strong></p>
+<p>首先你要理解同步和异步执行的概念，同步和异步目的不是为了是否创建一个新的线程，同步会阻塞当前函数的返回，异步函数会立即返回执行下面的代码；队列是一种数据结构，队列有FIFO,LIFO等，控制任务的执行顺序，至于是否开辟一个新的线程，因为同步函数会等待函数的返回，所以在当前线程执行就行了，没必要浪费资源再开辟新的线程，如果是异步函数，当前线程需要立即函数返回，然后往下执行，所以函数里面的任务必须要开辟一个新的线程去执行这个任务。</p>
+<p><code>队列上是放任务的,而线程是去执行队列上的任务的</code></p>
+<p>【问题1】：以下代码是在主线程执行的，会不会产生死锁？会！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;执行任务1&quot;);</span><br><span class="line">dispatch_queue_t queue = dispatch_get_main_queue();</span><br><span class="line">dispatch_sync(queue, ^&#123;</span><br><span class="line">NSLog(@&quot;执行任务2&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务3&quot;);</span><br></pre></td></tr></table></figure></p>
+
+<p><code>dispatch_sync立马在当前线程同步执行任务</code></p>
+<p>分析：</p>
+<ul>
+<li>1、主线程中任务执行：<code>任务1</code>、<code>sync</code>、<code>任务3</code>、</li>
+<li>2、主队列：<code>viewDidLoad</code>、<code>任务2</code>、</li>
+</ul>
+<p>其中在主队列<code>viewDidLoad</code>里面的<code>任务3</code>执行结束才会执行<code>任务2</code>；而主线程中是执行完<code>sync</code>才会执行<code>任务3</code>。也就是<code>任务2</code>等待<code>任务3</code>执行，<code>任务3</code>再也等待<code>任务2</code>执行，造成死锁</p>
+
+<p>【问题2】：以下代码是在主线程执行的，会不会产生死锁？不会！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- (void)interview02</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务1&quot;);</span><br><span class="line"></span><br><span class="line">dispatch_queue_t queue = dispatch_get_main_queue();</span><br><span class="line">dispatch_async(queue, ^&#123;</span><br><span class="line">NSLog(@&quot;执行任务2&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务3&quot;);</span><br><span class="line"></span><br><span class="line">// dispatch_async不要求立马在当前线程同步执行任务</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>因为<code>dispatch_async</code>不要求立马在当前线程同步执行任务，不会造成线程死锁</p>
+<p>【问题3】：以下代码是在主线程执行的，会不会产生死锁？会！</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">NSLog(@&quot;执行任务1&quot;);</span><br><span class="line"></span><br><span class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;myqueu&quot;, DISPATCH_QUEUE_SERIAL);</span><br><span class="line">dispatch_async(queue, ^&#123; // 0</span><br><span class="line">NSLog(@&quot;执行任务2&quot;);</span><br><span class="line"></span><br><span class="line">dispatch_sync(queue, ^&#123; // 1</span><br><span class="line">NSLog(@&quot;执行任务3&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务4&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务5&quot;);</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>执行任务3</code>和<code>执行任务4</code>之间造成死锁</p>
+<p>【问题4】：以下代码是在主线程执行的，会不会产生死锁？不会！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">- (void)interview04</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务1&quot;);</span><br><span class="line"></span><br><span class="line">dispatch_queue_t queue = dispatch_queue_create(&quot;myqueu&quot;, DISPATCH_QUEUE_CONCURRENT);</span><br><span class="line"></span><br><span class="line">dispatch_async(queue, ^&#123; // 0</span><br><span class="line">NSLog(@&quot;执行任务2&quot;);</span><br><span class="line"></span><br><span class="line">dispatch_sync(queue, ^&#123; // 1</span><br><span class="line">NSLog(@&quot;执行任务3&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务4&quot;);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;执行任务5&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
       
     </div>
     
@@ -333,6 +376,12 @@
     
 
     <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
       
 
       
@@ -407,8 +456,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
@@ -486,6 +544,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#iOS线程死锁"><span class="nav-number">1.</span> <span class="nav-text">iOS线程死锁</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
