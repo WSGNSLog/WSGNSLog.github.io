@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="定时器有三种常见定时器  1、NSTimer 2、CADisplayLink 3、GCD  NSTimer NSTimer是iOS中最常用的定时器。其通过Runloop来实现，一般情况下比较准确。但是当前循环耗时操作较多时，会出现延迟问题。同时，也受所加入的RunLoop的RunLoopMode影响。 12345678910111213/// 构造并开启(启动NSTimer本质上是将其加入RunL">
+<meta name="keywords" content="iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="10.1内存管理">
+<meta property="og:url" content="http://yoursite.com/2019/01/08/10-1内存管理/index.html">
+<meta property="og:site_name" content="个人博客">
+<meta property="og:description" content="定时器有三种常见定时器  1、NSTimer 2、CADisplayLink 3、GCD  NSTimer NSTimer是iOS中最常用的定时器。其通过Runloop来实现，一般情况下比较准确。但是当前循环耗时操作较多时，会出现延迟问题。同时，也受所加入的RunLoop的RunLoopMode影响。 12345678910111213/// 构造并开启(启动NSTimer本质上是将其加入RunL">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-1内存管理/timer.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-1内存管理/timer1.png">
+<meta property="og:updated_time" content="2019-01-08T02:59:37.426Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="10.1内存管理">
+<meta name="twitter:description" content="定时器有三种常见定时器  1、NSTimer 2、CADisplayLink 3、GCD  NSTimer NSTimer是iOS中最常用的定时器。其通过Runloop来实现，一般情况下比较准确。但是当前循环耗时操作较多时，会出现延迟问题。同时，也受所加入的RunLoop的RunLoopMode影响。 12345678910111213/// 构造并开启(启动NSTimer本质上是将其加入RunL">
+<meta name="twitter:image" content="http://yoursite.com/2019/01/08/10-1内存管理/timer.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'NSLegend'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/08/10-1内存管理/">
+
+
+
+
+
+  <title>10.1内存管理 | 个人博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Stay Hungry,Stay Foolish.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/08/10-1内存管理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">10.1内存管理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-08T10:45:43+08:00">
+                2019-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="定时器"><a href="#定时器" class="headerlink" title="定时器"></a>定时器</h2><p>有三种常见定时器</p>
+<ul>
+<li>1、NSTimer</li>
+<li>2、CADisplayLink</li>
+<li>3、GCD</li>
+</ul>
+<p><strong>NSTimer</strong></p>
+<p>NSTimer是iOS中最常用的定时器。其通过Runloop来实现，一般情况下比较准确。但是当前循环耗时操作较多时，会出现延迟问题。同时，也受所加入的RunLoop的RunLoopMode影响。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">/// 构造并开启(启动NSTimer本质上是将其加入RunLoop中)</span><br><span class="line">// &quot;scheduledTimer&quot;前缀的为自动启动NSTimer的，如:</span><br><span class="line">+ (NSTimer *)scheduledTimerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block</span><br><span class="line"></span><br><span class="line">/// 构造但不开启</span><br><span class="line">// &quot;timer&quot;前缀的为只构造不启用的，如:</span><br><span class="line">+ (NSTimer *)timerWithTimeInterval:(NSTimeInterval)interval repeats:(BOOL)repeats block:(void (^)(NSTimer *timer))block</span><br><span class="line"></span><br><span class="line">//定时器的释放一定要先将其终止，而后才能销毁对象</span><br><span class="line">- (void)invalidate;</span><br><span class="line">//立即执行(fire)</span><br><span class="line">//我们对定时器设置了延时之后，有时需要让它立刻执行，可以使用fire方法:</span><br><span class="line">- (void)fire;</span><br></pre></td></tr></table></figure>
+<p>简单使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//方法1</span><br><span class="line">self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(doTask) userInfo:nil repeats:YES];</span><br><span class="line"></span><br><span class="line">//方法2</span><br><span class="line">self.timer = [NSTimer timerWithTimeInterval:1.0 target:self selector:@selector(doTask) userInfo:nil repeats:YES];</span><br><span class="line">[[NSRunLoop currentRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];</span><br></pre></td></tr></table></figure></p>
+<p><strong>CADisplayLink</strong></p>
+<p>CADisplayLink是基于<code>屏幕刷新的周期</code>，所以其一般很准时，每秒刷新60次。其本质也是通过RunLoop，所以不难看出，当RunLoop选择其他模式或被耗时操作过多时，仍旧会造成延迟。</p>
+<p>其使用步骤为 <code>创建CADisplayLink-&gt;添加至RunLoop中-&gt;终止-&gt;销毁</code>。代码如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">self.link = [CADisplayLink displayLinkWithTarget:self selector:@selector(doTask)];</span><br><span class="line">[self.link addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];</span><br><span class="line"></span><br><span class="line">//在dealloc中</span><br><span class="line">// 终止定时器</span><br><span class="line">[disLink invalidate];</span><br><span class="line">// 销毁对象</span><br><span class="line">disLink = nil;</span><br></pre></td></tr></table></figure>
+<p>同时，由于其是基于屏幕刷新的，所以也度量单位是每帧，其提供了根据屏幕刷新来设置间隔的frameInterval属性，其决定于屏幕刷新多少帧时调用一次该方法，默认为1，即1/60秒调用一次。</p>
+<p>如果我们想要计算出每次调用的时间间隔，可以通过frameInterval * duration求出，后者为屏幕每帧间隔的只读属性。</p>
+<p>在日常开发中，适当使用CADisplayLink甚至有优化作用。比如对于需要动态计算进度的进度条，由于起进度反馈主要是为了UI更新，那么当计算进度的频率超过帧数时，就造成了很多无谓的计算。如果将计算进度的方法绑定到CADisplayLink上来调用，则只在每次屏幕刷新时计算进度，优化了性能。MBProcessHUB则是利用了这一特性</p>
+<p><strong>GCD</strong></p>
+<p>GCD定时器实际上是使用了dispatch源(dispatch source)，dispatch源监听系统内核对象并处理，通过系统级调用，更加精准</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">/** 创建定时器对象</span><br><span class="line">* para1: DISPATCH_SOURCE_TYPE_TIMER 为定时器类型</span><br><span class="line">* para2-3: 中间两个参数对定时器无用</span><br><span class="line">* para4: 最后为在什么调度队列中使用</span><br><span class="line">*/</span><br><span class="line">_gcdTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(0, 0));</span><br><span class="line">/** 设置定时器</span><br><span class="line">* para2: 任务开始时间</span><br><span class="line">* para3: 任务的间隔</span><br><span class="line">* para4: 可接受的误差时间，设置0即不允许出现误差</span><br><span class="line">* Tips: 单位均为纳秒</span><br><span class="line">*/</span><br><span class="line">dispatch_source_set_timer(_gcdTimer, DISPATCH_TIME_NOW, 2.0 * NSEC_PER_SEC, 0.0 * NSEC_PER_SEC);</span><br><span class="line">/** 设置定时器任务</span><br><span class="line">* 可以通过block方式</span><br><span class="line">* 也可以通过C函数方式</span><br><span class="line">*/</span><br><span class="line">dispatch_source_set_event_handler(_gcdTimer, ^&#123;</span><br><span class="line">static int gcdIdx = 0;</span><br><span class="line">NSLog(@&quot;GCD Method: %d&quot;, gcdIdx++);</span><br><span class="line">NSLog(@&quot;%@&quot;, [NSThread currentThread]);</span><br><span class="line"></span><br><span class="line">if(gcdIdx == 5) &#123;</span><br><span class="line">// 终止定时器</span><br><span class="line">dispatch_suspend(_gcdTimer);</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line">// 启动任务，GCD计时器创建后需要手动启动</span><br><span class="line">dispatch_resume(_gcdTimer);</span><br></pre></td></tr></table></figure>
+<h3 id="内存泄露"><a href="#内存泄露" class="headerlink" title="内存泄露"></a>内存泄露</h3><p>我们简单的做一个能够销毁的<code>viewcontroller</code>，然后里面写一个<code>NSTimer</code>定时器，然后在<code>dealloc</code>中销毁定时器。我们发现在我们<code>viewcontroller</code>销毁的时候，<code>dealloc</code>并没有执行，所以其实使用<code>dealloc</code>是存在内存泄漏的。</p>
+<img src="/2019/01/08/10-1内存管理/timer.png" title="timer">
+<p><code>timer强引用self，self又强引用timer</code> 造成循环引用。</p>
+<p><strong>解决方案</strong></p>
+<ul>
+<li>1、在释放timer的时候，写在<code>viewWillDisappear</code>里面</li>
+<li>2、在引入一个类来接管<code>target</code></li>
+</ul>
+<p>对于第一种方案，没有什么好说的，我们就来研究一下第二种方案吧。</p>
+<img src="/2019/01/08/10-1内存管理/timer1.png" title="timer1">
+<h4 id="利用NSProxy解决NSTimer内存泄漏问题"><a href="#利用NSProxy解决NSTimer内存泄漏问题" class="headerlink" title="利用NSProxy解决NSTimer内存泄漏问题"></a>利用NSProxy解决NSTimer内存泄漏问题</h4><p>NSProxy是一个抽象类，必须继承实例化其子类才能使用。NSproxy具体使用参考<a href="https://developer.apple.com/library/mac/samplecode/ForwardInvocation/Listings/main_m.html#//apple_ref/doc/uid/DTS40008833-main_m-DontLinkElementID_4" target="_blank" rel="noopener">官方示例</a>，在上面示例中通过消息转发实现了同时对NSProxy发送NSMutableString和NSMutableArray类型的消息间接的实现了多重继承。</p>
+<p>什么是NSProxy：</p>
+<ul>
+<li>NSProxy是一个抽象的基类，是根类，与NSObject类似</li>
+<li>NSProxy和NSObject都实现了<nsobject>协议</nsobject></li>
+<li>提供了消息转发的通用接口</li>
+</ul>
+<p>如何使用NSProxy来转发消息? </p>
+<ul>
+<li>1.需要继承NSProxy </li>
+<li>2.重写如下的2个方法：<ul>
+<li><code>methodSignatureForSelector:</code></li>
+<li><code>forwardInvocation:</code></li>
+</ul>
+</li>
+</ul>
+<p>代码使用，写一个继承自<code>NSProxy</code>的<code>MyProxy</code>类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">@interface MyProxy : NSProxy</span><br><span class="line">+ (instancetype)proxyWithTarget:(id)target;</span><br><span class="line">@property (weak, nonatomic) id target;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation MyProxy</span><br><span class="line">+ (instancetype)proxyWithTarget:(id)target</span><br><span class="line">&#123;</span><br><span class="line">// NSProxy对象不需要调用init，因为它本来就没有init方法</span><br><span class="line">MyProxy *proxy = [MyProxy alloc];</span><br><span class="line">proxy.target = target;</span><br><span class="line">return proxy;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel</span><br><span class="line">&#123;</span><br><span class="line">return [self.target methodSignatureForSelector:sel];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)forwardInvocation:(NSInvocation *)invocation</span><br><span class="line">&#123;</span><br><span class="line">[invocation invokeWithTarget:self.target];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br></pre></td></tr></table></figure></p>
+<p>使用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:[MyProxy proxyWithTarget:self] selector:@selector(doTask) userInfo:nil repeats:YES];</span><br></pre></td></tr></table></figure></p>
+<p>现在在<code>dealloc</code>中销毁定时器，发现会执行<code>dealloc</code>方法</p>
+<h4 id="GCD封装"><a href="#GCD封装" class="headerlink" title="GCD封装"></a>GCD封装</h4><p>这三种定时器中最准确的还是<code>GCD</code>，但是我们发现在使用的时候，我们会写很多代码，所以为了下一次使用的时候不写那么多的代码，我们就简单的封装一下。</p>
+<p><strong>接口</strong><br>在写具体的代码之前，我们首先需要考虑的就是我们应该提供什么接口</p>
+<ul>
+<li>1、肯定需要里面执行事件，所以需要一个回调</li>
+<li>2、设置什么时候开始启动定时器</li>
+<li>3、设置定时器的时间间隔</li>
+<li>4、是否重复执行</li>
+<li>5、是否多线程执行</li>
+<li>6、提供取消任务的接口<br>其实提供这么多的信息基本上已经够用了。然后我们就可以开始写代码了。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+ (void)execTask:(void(^)(void))task</span><br><span class="line">start:(NSTimeInterval)start</span><br><span class="line">interval:(NSTimeInterval)interval</span><br><span class="line">repeats:(BOOL)repeats</span><br><span class="line">async:(BOOL)async;</span><br><span class="line"></span><br><span class="line">+ (void)cancelTask;</span><br></pre></td></tr></table></figure>
+<p>初步封装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">+ (void)execTask:(void(^)(void))task</span><br><span class="line">start:(NSTimeInterval)start</span><br><span class="line">interval:(NSTimeInterval)interval</span><br><span class="line">repeats:(BOOL)repeats</span><br><span class="line">async:(BOOL)async&#123;</span><br><span class="line"></span><br><span class="line">if (!task || start &lt; 0 || (interval &lt;= 0 &amp;&amp; repeats)) return ;</span><br><span class="line">// 队列</span><br><span class="line">dispatch_queue_t queue = async ? dispatch_get_global_queue(0, 0) : dispatch_get_main_queue();</span><br><span class="line">// 创建定时器</span><br><span class="line">dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);</span><br><span class="line">// 设置时间</span><br><span class="line">dispatch_source_set_timer(timer,</span><br><span class="line">dispatch_time(DISPATCH_TIME_NOW, start * NSEC_PER_SEC),</span><br><span class="line">interval * NSEC_PER_SEC, 0);</span><br><span class="line">// 设置回调</span><br><span class="line">dispatch_source_set_event_handler(timer, ^&#123;</span><br><span class="line">task();</span><br><span class="line">if (!repeats) &#123; // 不重复的任务</span><br><span class="line">dispatch_source_cancel(timer);</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 启动定时器</span><br><span class="line">dispatch_resume(timer);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>思考</strong><br><code>我们在创建多个定时器的时候，我们需要取消某一个定时器，我们应该怎么找到该定时器</code></p>
+<p>为了解决上面问题,我们可以考虑到用一个字典存储每一个定时器，在取消的时候，根据定时器的<code>key</code>找到相应的定时器。所以我们需要把接口改成这个样子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">+ (NSString *)execTask:(void(^)(void))task</span><br><span class="line">start:(NSTimeInterval)start</span><br><span class="line">interval:(NSTimeInterval)interval</span><br><span class="line">repeats:(BOOL)repeats</span><br><span class="line">async:(BOOL)async;</span><br><span class="line"></span><br><span class="line">+ (void)cancelTask:(NSString *)name;</span><br></pre></td></tr></table></figure></p>
+<p>具体的实现<br>取消任务，吧<code>key</code>移除<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+ (void)cancelTask:(NSString *)name&#123;</span><br><span class="line">if (name.length == 0) return;</span><br><span class="line">dispatch_source_t timer = timers_[name];</span><br><span class="line">if (timer) &#123;</span><br><span class="line">dispatch_source_cancel(timer);</span><br><span class="line">[timers_ removeObjectForKey:name];</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>在添加任务的时候，同时需要像字典中添加键值对<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 定时器的唯一标识</span><br><span class="line">NSString *name = [NSString stringWithFormat:@&quot;%zd&quot;, timers_.count];</span><br><span class="line">// 存放到字典中</span><br><span class="line">timers_[name] = timer;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">static NSMutableDictionary *timers_;</span><br><span class="line">+ (void)initialize</span><br><span class="line">&#123;</span><br><span class="line">static dispatch_once_t onceToken;</span><br><span class="line">dispatch_once(&amp;onceToken, ^&#123;</span><br><span class="line">timers_ = [NSMutableDictionary dictionary];</span><br><span class="line"></span><br><span class="line">&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">+ (void)execTask:(void(^)(void))task</span><br><span class="line">start:(NSTimeInterval)start</span><br><span class="line">interval:(NSTimeInterval)interval</span><br><span class="line">repeats:(BOOL)repeats</span><br><span class="line">async:(BOOL)async&#123;</span><br><span class="line"></span><br><span class="line">if (!task || start &lt; 0 || (interval &lt;= 0 &amp;&amp; repeats)) return ;</span><br><span class="line">// 队列</span><br><span class="line">dispatch_queue_t queue = async ? dispatch_get_global_queue(0, 0) : dispatch_get_main_queue();</span><br><span class="line">// 创建定时器</span><br><span class="line">dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);</span><br><span class="line">// 设置时间</span><br><span class="line">dispatch_source_set_timer(timer,</span><br><span class="line">dispatch_time(DISPATCH_TIME_NOW, start * NSEC_PER_SEC),</span><br><span class="line">interval * NSEC_PER_SEC, 0);</span><br><span class="line"></span><br><span class="line">// 定时器的唯一标识</span><br><span class="line">NSString *name = [NSString stringWithFormat:@&quot;%zd&quot;, timers_.count];</span><br><span class="line">// 存放到字典中</span><br><span class="line">timers_[name] = timer;</span><br><span class="line"></span><br><span class="line">// 设置回调</span><br><span class="line">dispatch_source_set_event_handler(timer, ^&#123;</span><br><span class="line">task();</span><br><span class="line">if (!repeats) &#123; // 不重复的任务</span><br><span class="line">[self cancelTask:name];</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 启动定时器</span><br><span class="line">dispatch_resume(timer);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> </span><br><span class="line">+ (void)cancelTask:(NSString *)name&#123;</span><br><span class="line">if (name.length == 0) return;</span><br><span class="line">dispatch_source_t timer = timers_[name];</span><br><span class="line">if (timer) &#123;</span><br><span class="line">dispatch_source_cancel(timer);</span><br><span class="line">[timers_ removeObjectForKey:name];</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>思考</strong><br><code>在进行多线程操作的时候，字典的添加移除操作会不会造成线程的不安全</code><br>答案是肯定的，多线程会造成线程不安全，为了解决这个问题，我们在对字典读写操作的时候需要<code>加锁</code></p>
+<p>最终封装</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line">static NSMutableDictionary *timers_;</span><br><span class="line">dispatch_semaphore_t semaphore_;</span><br><span class="line"></span><br><span class="line">+ (void)initialize</span><br><span class="line">&#123;</span><br><span class="line">static dispatch_once_t onceToken;</span><br><span class="line">dispatch_once(&amp;onceToken, ^&#123;</span><br><span class="line">timers_ = [NSMutableDictionary dictionary];</span><br><span class="line">semaphore_ = dispatch_semaphore_create(1);</span><br><span class="line">&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">+ (NSString *)execTask:(void (^)(void))task start:(NSTimeInterval)start interval:(NSTimeInterval)interval repeats:(BOOL)repeats async:(BOOL)async</span><br><span class="line">&#123;</span><br><span class="line">if (!task || start &lt; 0 || (interval &lt;= 0 &amp;&amp; repeats)) return nil;</span><br><span class="line"></span><br><span class="line">// 队列</span><br><span class="line">dispatch_queue_t queue = async ? dispatch_get_global_queue(0, 0) : dispatch_get_main_queue();</span><br><span class="line"></span><br><span class="line">// 创建定时器</span><br><span class="line">dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, queue);</span><br><span class="line"></span><br><span class="line">// 设置时间</span><br><span class="line">dispatch_source_set_timer(timer,</span><br><span class="line">dispatch_time(DISPATCH_TIME_NOW, start * NSEC_PER_SEC),</span><br><span class="line">interval * NSEC_PER_SEC, 0);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">dispatch_semaphore_wait(semaphore_, DISPATCH_TIME_FOREVER);</span><br><span class="line">// 定时器的唯一标识</span><br><span class="line">NSString *name = [NSString stringWithFormat:@&quot;%zd&quot;, timers_.count];</span><br><span class="line">// 存放到字典中</span><br><span class="line">timers_[name] = timer;</span><br><span class="line">dispatch_semaphore_signal(semaphore_);</span><br><span class="line"></span><br><span class="line">// 设置回调</span><br><span class="line">dispatch_source_set_event_handler(timer, ^&#123;</span><br><span class="line">task();</span><br><span class="line"></span><br><span class="line">if (!repeats) &#123; // 不重复的任务</span><br><span class="line">[self cancelTask:name];</span><br><span class="line">&#125;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">// 启动定时器</span><br><span class="line">dispatch_resume(timer);</span><br><span class="line"></span><br><span class="line">return name;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">+ (void)cancelTask:(NSString *)name</span><br><span class="line">&#123;</span><br><span class="line">if (name.length == 0) return;</span><br><span class="line"></span><br><span class="line">dispatch_semaphore_wait(semaphore_, DISPATCH_TIME_FOREVER);</span><br><span class="line"></span><br><span class="line">dispatch_source_t timer = timers_[name];</span><br><span class="line">if (timer) &#123;</span><br><span class="line">dispatch_source_cancel(timer);</span><br><span class="line">[timers_ removeObjectForKey:name];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">dispatch_semaphore_signal(semaphore_);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/26/9-8多线程/" rel="next" title="9.8多线程">
+                <i class="fa fa-chevron-left"></i> 9.8多线程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/08/10-2内存管理/" rel="prev" title="10.2内存管理">
+                10.2内存管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/headIcon.png" alt="NSLegend">
+            
+              <p class="site-author-name" itemprop="name">NSLegend</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry,Stay Foolish.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/WSGNSLog" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.jianshu.com/u/ba5f297de9bc" target="_blank" title="简书">
+                      
+                        <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#定时器"><span class="nav-number">1.</span> <span class="nav-text">定时器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存泄露"><span class="nav-number">1.1.</span> <span class="nav-text">内存泄露</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#利用NSProxy解决NSTimer内存泄漏问题"><span class="nav-number">1.1.1.</span> <span class="nav-text">利用NSProxy解决NSTimer内存泄漏问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GCD封装"><span class="nav-number">1.1.2.</span> <span class="nav-text">GCD封装</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NSLegend</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

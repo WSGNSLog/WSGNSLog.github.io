@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="@property 的本质是什么@property 的本质就是ivar + getter + setter 我们创建一个person类，里面创建一个属性1@property (nonatomic,copy) NSString *name; 打印属性信息 12345678910unsigned int count;objc_property_t *propertyList = class_copyP">
+<meta name="keywords" content="iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="10.5内存管理">
+<meta property="og:url" content="http://yoursite.com/2019/01/08/10-5内存管理/index.html">
+<meta property="og:site_name" content="个人博客">
+<meta property="og:description" content="@property 的本质是什么@property 的本质就是ivar + getter + setter 我们创建一个person类，里面创建一个属性1@property (nonatomic,copy) NSString *name; 打印属性信息 12345678910unsigned int count;objc_property_t *propertyList = class_copyP">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-5内存管理/property.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-5内存管理/property1.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-5内存管理/property2.png">
+<meta property="og:updated_time" content="2019-01-08T03:08:54.639Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="10.5内存管理">
+<meta name="twitter:description" content="@property 的本质是什么@property 的本质就是ivar + getter + setter 我们创建一个person类，里面创建一个属性1@property (nonatomic,copy) NSString *name; 打印属性信息 12345678910unsigned int count;objc_property_t *propertyList = class_copyP">
+<meta name="twitter:image" content="http://yoursite.com/2019/01/08/10-5内存管理/property.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'NSLegend'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/08/10-5内存管理/">
+
+
+
+
+
+  <title>10.5内存管理 | 个人博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Stay Hungry,Stay Foolish.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/08/10-5内存管理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">10.5内存管理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-08T10:46:08+08:00">
+                2019-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="property-的本质是什么"><a href="#property-的本质是什么" class="headerlink" title="@property 的本质是什么"></a>@property 的本质是什么</h2><p>@property 的本质就是<code>ivar + getter + setter</code></p>
+<p>我们创建一个<code>person</code>类，里面创建一个属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@property (nonatomic,copy) NSString *name;</span><br></pre></td></tr></table></figure></p>
+<p><strong>打印属性信息</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">unsigned int count;</span><br><span class="line">objc_property_t *propertyList = class_copyPropertyList([Person class], &amp;count);</span><br><span class="line">for (unsigned int i = 0; i&lt; count; i++)</span><br><span class="line">&#123;</span><br><span class="line">const char *name = property_getName(propertyList[i]);</span><br><span class="line">NSLog(@&quot;__%@&quot;,[NSString stringWithUTF8String:name]);</span><br><span class="line">objc_property_t property = propertyList[i];</span><br><span class="line">const char *a = property_getAttributes(property);</span><br><span class="line">NSLog(@&quot;属性信息__%@&quot;,[NSString stringWithUTF8String:a]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2019/01/08/10-5内存管理/property.png" title="property">
+<p>属性信息中<code>NSString</code>我们是知道了，但是<code>T,C,N,V_name</code>都是什么意思呢。我们查看<a href="https://link.jianshu.com/?t=https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html" target="_blank" rel="noopener">官方介绍</a></p>
+<img src="/2019/01/08/10-5内存管理/property1.png" title="property1">
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">//T@&quot;NSString&quot;,C,N,V_name</span><br><span class="line">//T 类型</span><br><span class="line">//C copy</span><br><span class="line">//N nonatomic</span><br><span class="line">//V 实例变量</span><br></pre></td></tr></table></figure>
+<p><strong>方法列表</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">u_int methodCount;</span><br><span class="line">NSMutableArray *methodList = [NSMutableArray array];</span><br><span class="line">Method *methods = class_copyMethodList([Person class], &amp;methodCount);</span><br><span class="line">for (int i = 0; i &lt; methodCount; i++)</span><br><span class="line">&#123;</span><br><span class="line">SEL name = method_getName(methods[i]);</span><br><span class="line">NSString *strName = [NSString stringWithCString:sel_getName(name) encoding:NSUTF8StringEncoding];</span><br><span class="line">[methodList addObject:strName];</span><br><span class="line">&#125;</span><br><span class="line">free(methods);</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;方法列表:%@&quot;,methodList);</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-5内存管理/property2.png" title="property2">
+<p>我们并没有写<code>name</code>&amp;<code>setName:</code>方法，所以这个<code>get</code>和<code>set</code>方法应该就是runtime生成的。</p>
+<h3 id="property的实现"><a href="#property的实现" class="headerlink" title="property的实现"></a>property的实现</h3><p>property的实现主要是利用runtime的两个方法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class_addProperty(Class _Nullable cls, const char * _Nonnull name,</span><br><span class="line">const objc_property_attribute_t * _Nullable attributes,</span><br><span class="line">unsigned int attributeCount)</span><br><span class="line"></span><br><span class="line">void</span><br><span class="line">class_addMethods(Class _Nullable, struct objc_method_list * _Nonnull)</span><br></pre></td></tr></table></figure></p>
+<p><strong>1、class_addProperty 生成属性</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/** </span><br><span class="line">* Adds a property to a class.</span><br><span class="line">* </span><br><span class="line">* @param cls 修改的类</span><br><span class="line">* @param name 属性名字</span><br><span class="line">* @param attributes 属性数组</span><br><span class="line">* @param attributeCount 属性数组数量</span><br><span class="line">* @return y 成功,n失败</span><br><span class="line">*/</span><br><span class="line">OBJC_EXPORT BOOL class_addProperty(Class cls, const char *name, const objc_property_attribute_t *attributes, unsigned int attributeCount)</span><br></pre></td></tr></table></figure>
+<p>生成属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">objc_property_attribute_t type = &#123; &quot;T&quot;, &quot;@\&quot;NSString\&quot;&quot; &#125;;</span><br><span class="line">objc_property_attribute_t ownership = &#123; &quot;C&quot;, &quot;&quot; &#125;; // C = copy</span><br><span class="line">objc_property_attribute_t nonatomic = &#123; &quot;N&quot;, &quot;&quot; &#125;; //nonatomic</span><br><span class="line">objc_property_attribute_t backingivar  = &#123; &quot;V&quot;, &quot;_name&quot; &#125;;//V 实例变量</span><br><span class="line">objc_property_attribute_t attrs[] = &#123; type, ownership,nonatomic, backingivar &#125;;</span><br><span class="line">class_addProperty([self class], &quot;name&quot;, attrs, 4);</span><br></pre></td></tr></table></figure></p>
+<p><strong>2、class_addMethod 生成方法</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">NSString *nameGetter(id self, SEL _cmd) &#123;</span><br><span class="line">Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</span><br><span class="line">return object_getIvar(self, ivar);</span><br><span class="line">&#125;</span><br><span class="line">void nameSetter(id self, SEL _cmd, NSString *newName) &#123;</span><br><span class="line">Ivar ivar = class_getInstanceVariable([self class], &quot;_privateName&quot;);</span><br><span class="line">id oldName = object_getIvar(self, ivar);</span><br><span class="line">if (oldName != newName) object_setIvar(self, ivar, [newName copy]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//其中 “v@:” 表示返回值和参数</span><br><span class="line"></span><br><span class="line">if(class_addMethod([self class],  NSSelectorFromString(@&quot;name&quot;), (IMP)nameGetter, &quot;@@:&quot;))</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;name get 方法添加成功&quot;);</span><br><span class="line">&#125;</span><br><span class="line">else</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;name get 方法添加失败&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">if(class_addMethod([self class], NSSelectorFromString(@&quot;setName:&quot;), (IMP)nameSetter, &quot;v@:@&quot;))</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;name set 方法添加成功&quot;);</span><br><span class="line">&#125;</span><br><span class="line">else</span><br><span class="line">&#123;</span><br><span class="line">NSLog(@&quot;name set 方法添加失败&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/08/10-4内存管理/" rel="next" title="10.4内存管理">
+                <i class="fa fa-chevron-left"></i> 10.4内存管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/08/10-6内存管理/" rel="prev" title="10.6内存管理">
+                10.6内存管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/headIcon.png" alt="NSLegend">
+            
+              <p class="site-author-name" itemprop="name">NSLegend</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry,Stay Foolish.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/WSGNSLog" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.jianshu.com/u/ba5f297de9bc" target="_blank" title="简书">
+                      
+                        <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#property-的本质是什么"><span class="nav-number">1.</span> <span class="nav-text">@property 的本质是什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#property的实现"><span class="nav-number">1.1.</span> <span class="nav-text">property的实现</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NSLegend</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

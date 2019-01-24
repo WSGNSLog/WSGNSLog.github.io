@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="iOS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Copy&amp;amp;Strong原理问题  1、用@property声明的NSString（或NSArray，NSDictionary）经常使用copy关键字，为什么？如果改用strong关键字，可能造成什么问题？ 2、怎么用 copy 关键字？ 3、如何让自己的类用 copy 修饰符？如何重写带 copy 关键字的 setter？ 4、对非集合类对象的copy操作 5、集合类对象的copy与mut">
+<meta name="keywords" content="iOS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="10.3内存管理">
+<meta property="og:url" content="http://yoursite.com/2019/01/08/10-3内存管理/index.html">
+<meta property="og:site_name" content="个人博客">
+<meta property="og:description" content="Copy&amp;amp;Strong原理问题  1、用@property声明的NSString（或NSArray，NSDictionary）经常使用copy关键字，为什么？如果改用strong关键字，可能造成什么问题？ 2、怎么用 copy 关键字？ 3、如何让自己的类用 copy 修饰符？如何重写带 copy 关键字的 setter？ 4、对非集合类对象的copy操作 5、集合类对象的copy与mut">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy1.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy2.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy3.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy4.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy5.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy6.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy7.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/strong.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/strong1.png">
+<meta property="og:image" content="http://yoursite.com/2019/01/08/10-3内存管理/strong2.png">
+<meta property="og:updated_time" content="2019-01-08T03:40:31.900Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="10.3内存管理">
+<meta name="twitter:description" content="Copy&amp;amp;Strong原理问题  1、用@property声明的NSString（或NSArray，NSDictionary）经常使用copy关键字，为什么？如果改用strong关键字，可能造成什么问题？ 2、怎么用 copy 关键字？ 3、如何让自己的类用 copy 修饰符？如何重写带 copy 关键字的 setter？ 4、对非集合类对象的copy操作 5、集合类对象的copy与mut">
+<meta name="twitter:image" content="http://yoursite.com/2019/01/08/10-3内存管理/copy1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'NSLegend'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/08/10-3内存管理/">
+
+
+
+
+
+  <title>10.3内存管理 | 个人博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">个人博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Stay Hungry,Stay Foolish.</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/08/10-3内存管理/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="NSLegend">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/headIcon.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="个人博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">10.3内存管理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-08T10:45:57+08:00">
+                2019-01-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing">
+                  <a href="/categories/iOS底层/" itemprop="url" rel="index">
+                    <span itemprop="name">iOS底层</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Copy-amp-Strong原理"><a href="#Copy-amp-Strong原理" class="headerlink" title="Copy&amp;Strong原理"></a>Copy&amp;Strong原理</h2><p><strong>问题</strong></p>
+<ul>
+<li>1、用@property声明的NSString（或NSArray，NSDictionary）经常使用copy关键字，为什么？如果改用strong关键字，可能造成什么问题？</li>
+<li>2、怎么用 copy 关键字？</li>
+<li>3、如何让自己的类用 copy 修饰符？如何重写带 copy 关键字的 setter？</li>
+<li>4、对非集合类对象的copy操作</li>
+<li>5、集合类对象的copy与mutableCopy</li>
+<li>6、这个写法会出什么问题： <code>@property (copy) NSMutableArray *array;</code></li>
+</ul>
+<h3 id="Copy探究"><a href="#Copy探究" class="headerlink" title="Copy探究"></a>Copy探究</h3><p>在开始回答<code>copy</code>的各种问题之前，我们需要先了解我们为什么要使用<code>copy</code>。</p>
+<ul>
+<li>1、拷贝的目的：产生一个副本对象，跟源对象互不影响<ul>
+<li>修改了源对象，不会影响副本对象</li>
+<li>修改了副本对象，不会影响源对象</li>
+</ul>
+</li>
+<li>2、iOS提供了2个拷贝方法<ul>
+<li>1、copy，不可变拷贝，产生不可变副本</li>
+<li>2、mutableCopy，可变拷贝，产生可变副本</li>
+</ul>
+</li>
+<li>3、深拷贝和浅拷贝<ul>
+<li>1、深拷贝：内容拷贝，产生新的对象</li>
+<li>2、浅拷贝：指针拷贝，没有产生新的对象</li>
+</ul>
+</li>
+</ul>
+<p><strong>test1</strong></p>
+<p>对不可变字符串进行<code>copy&amp;mutableCopy</code>操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void test1()</span><br><span class="line">&#123;</span><br><span class="line">NSString *str1 = [NSString stringWithFormat:@&quot;test&quot;];</span><br><span class="line">NSString *str2 = [str1 copy]; // 返回的是NSString</span><br><span class="line">NSMutableString *str3 = [str1 mutableCopy]; // 返回的是NSMutableString</span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, str1, str2, str3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy1.png" title="copy1">
+<p>我们根据打印的地址可以看出<code>不可变字符串在copy时是浅拷贝，只拷贝了指针没有拷贝对象；mutableCopy则是深拷贝，产生了新的对象</code></p>
+<p><strong>test2</strong></p>
+<p>对可变字符串进行<code>copy&amp;mutableCopy</code>操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void test2()</span><br><span class="line">&#123;</span><br><span class="line">NSMutableString *str1 = [[NSMutableString alloc] initWithFormat:@&quot;test&quot;]; // 1</span><br><span class="line">NSString *str2 = [str1 copy]; // 深拷贝</span><br><span class="line">NSMutableString *str3 = [str1 mutableCopy]; // 深拷贝</span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, str1, str2, str3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy2.png" title="copy2">
+<p>我们根据打印的地址可以看出<code>对于可变字符串不论是copy还是mutableCopy都是深拷贝</code></p>
+<p><strong>test3</strong></p>
+<p>对不可变数组进行<code>copy&amp;mutableCopy</code>操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void test3()</span><br><span class="line">&#123;</span><br><span class="line">NSArray *array1 = [[NSArray alloc] initWithObjects:@&quot;a&quot;, @&quot;b&quot;, nil];</span><br><span class="line">NSArray *array2 = [array1 copy]; // 浅拷贝</span><br><span class="line">NSMutableArray *array3 = [array1 mutableCopy]; // 深拷贝</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, array1, array2, array3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy3.png" title="copy3">
+<p>我们根据打印的地址可以看出<code>不可变数组在copy时是浅拷贝，只拷贝了指针没有拷贝对象；mutableCopy则是深拷贝，产生了新的对象</code></p>
+<p><strong>test4</strong></p>
+<p>对可变数组进行<code>copy&amp;mutableCopy</code>操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void test4()</span><br><span class="line">&#123;</span><br><span class="line">NSMutableArray *array1 = [[NSMutableArray alloc] initWithObjects:@&quot;a&quot;, @&quot;b&quot;, nil];</span><br><span class="line">NSArray *array2 = [array1 copy]; // 深拷贝</span><br><span class="line">NSMutableArray *array3 = [array1 mutableCopy]; // 深拷贝</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, array1, array2, array3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy4.png" title="copy4">
+<p>我们根据打印的地址可以看出<code>对于可变数组不论是copy还是mutableCopy都是深拷贝</code></p>
+<p><strong>test5</strong></p>
+<p>对不可变字典进行<code>copy&amp;mutableCopy</code>操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void test5()</span><br><span class="line">&#123;</span><br><span class="line">NSDictionary *dict1 = [[NSDictionary alloc] initWithObjectsAndKeys:@&quot;jack&quot;, @&quot;name&quot;, nil];</span><br><span class="line">NSDictionary *dict2 = [dict1 copy]; // 浅拷贝</span><br><span class="line">NSMutableDictionary *dict3 = [dict1 mutableCopy]; // 深拷贝</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, dict1, dict2, dict3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy5.png" title="copy5">
+<p>我们根据打印的地址可以看出<code>不可变字典在copy时是浅拷贝，只拷贝了指针没有拷贝对象；mutableCopy则是深拷贝，产生了新的对象</code></p>
+<p><strong>test6</strong></p>
+<p>对可变字典进行<code>copy&amp;mutableCopy</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">void test6()</span><br><span class="line">&#123;</span><br><span class="line">NSMutableDictionary *dict1 = [[NSMutableDictionary alloc] initWithObjectsAndKeys:@&quot;jack&quot;, @&quot;name&quot;, nil];</span><br><span class="line">NSDictionary *dict2 = [dict1 copy]; // 深拷贝</span><br><span class="line">NSMutableDictionary *dict3 = [dict1 mutableCopy]; // 深拷贝</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;%p %p %p&quot;, dict1, dict2, dict3);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/copy6.png" title="copy6">
+<p>根据上面结果我们可以总结出</p>
+<img src="/2019/01/08/10-3内存管理/copy7.png" title="copy7">
+<p><strong>让自己的类用 copy 修饰符</strong></p>
+<p>我们<code>copy</code>属性一般只对<code>NSString NSArray NSDictionary NSSet</code>等这些可用，假如我们要对我们的类对象进行copy实现，我们应该怎么做呢</p>
+<p><code>若想令自己所写的对象具有拷贝功能，则需实现 NSCopying 协议。如果自定义的对象分为可变版本与不可变版本，那么就要同时实现 NSCopying 与 NSMutableCopying 协议。</code></p>
+<ul>
+<li>1、需声明该类遵从 NSCopying 协议</li>
+<li>2、实现 NSCopying 协议<code>- (id)copyWithZone:(NSZone *)zone;</code></li>
+<li>3、在<code>- (id)copyWithZone:(NSZone *)zone;</code>方法中对类对象进行重新赋值</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@interface Dog : NSObject&lt;NSCopying&gt;</span><br><span class="line">@property (nonatomic,assign) int age;</span><br><span class="line">@property (nonatomic,copy) NSString *name;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">- (id)copyWithZone:(NSZone *)zone&#123;</span><br><span class="line">Dog *d = [[self class]allocWithZone:zone];</span><br><span class="line">d.age = _age;</span><br><span class="line">d.name = _name;</span><br><span class="line">return d;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>如何重写带 copy 关键字的 setter</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)setName:(NSString *)name &#123;</span><br><span class="line">if (_name != name) &#123;</span><br><span class="line">//[_name release];//MRC</span><br><span class="line">_name = [name copy];</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Strong"><a href="#Strong" class="headerlink" title="Strong"></a>Strong</h3><p>我们添加属性<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@property (strong, nonatomic) NSString *strStrong;</span><br><span class="line">@property (copy, nonatomic) NSString *strCopy;</span><br></pre></td></tr></table></figure></p>
+<p><strong>不可变字符串</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">NSString *str = @&quot;abc&quot;;</span><br><span class="line">self.strCopy = str;</span><br><span class="line">self.strStrong = str;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;\nstr     = %@   内存地址 = %p 指针地址 = %p \nstrong  = %@   内存地址 = %p 指针地址 = %p \ncopy    = %@   内存地址 = %p 指针地址 = %p&quot;,</span><br><span class="line">str,str,&amp;str,</span><br><span class="line">self.strStrong,self.strStrong,&amp;_strStrong,</span><br><span class="line">self.strCopy,self.strCopy,&amp;_strCopy);</span><br></pre></td></tr></table></figure></p>
+<p>我们打印内存地址和指针地址<br><img src="/2019/01/08/10-3内存管理/strong.png" title="strong"></p>
+<p>我们修改<code>str</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">NSString *str = @&quot;abc&quot;;</span><br><span class="line">self.strCopy = str;</span><br><span class="line">self.strStrong = str;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;\nstr     = %@   内存地址 = %p 指针地址 = %p \nstrong  = %@   内存地址 = %p 指针地址 = %p \ncopy    = %@   内存地址 = %p 指针地址 = %p&quot;,</span><br><span class="line">str,str,&amp;str,</span><br><span class="line">self.strStrong,self.strStrong,&amp;_strStrong,</span><br><span class="line">self.strCopy,self.strCopy,&amp;_strCopy);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">str = @&quot;123&quot;;</span><br><span class="line">NSLog(@&quot;\nstr     = %@   内存地址 = %p 指针地址 = %p \nstrong  = %@   内存地址 = %p 指针地址 = %p \ncopy    = %@   内存地址 = %p 指针地址 = %p&quot;,</span><br><span class="line">str,str,&amp;str,</span><br><span class="line">self.strStrong,self.strStrong,&amp;_strStrong,</span><br><span class="line">self.strCopy,self.strCopy,&amp;_strCopy);</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/strong1.png" title="strong1">
+<p><code>结论：源对象为不可变字符串而言，不论使用copy还是strong属性，所对应的值是不发生变化，strong和copy并没有开辟新的内存，即并不是深拷贝。此时，使用copy或是strong，并没有对数据产生影响</code></p>
+<p><strong>可变字符串</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">NSMutableString *str = [[NSMutableString alloc] initWithString:@&quot;abc&quot;];</span><br><span class="line">self.strCopy = str;</span><br><span class="line">self.strStrong = str;</span><br><span class="line"></span><br><span class="line">NSLog(@&quot;\nstr     = %@   内存地址 = %p 指针地址 = %p \nstrong  = %@   内存地址 = %p 指针地址 = %p \ncopy    = %@   内存地址 = %p 指针地址 = %p&quot;,</span><br><span class="line">str,str,&amp;str,</span><br><span class="line">self.strStrong,self.strStrong,&amp;_strStrong,</span><br><span class="line">self.strCopy,self.strCopy,&amp;_strCopy);</span><br><span class="line"></span><br><span class="line">[str appendString:@&quot;123&quot;];</span><br><span class="line">NSLog(@&quot;\nstr     = %@   内存地址 = %p 指针地址 = %p \nstrong  = %@   内存地址 = %p 指针地址 = %p \ncopy    = %@   内存地址 = %p 指针地址 = %p&quot;,</span><br><span class="line">str,str,&amp;str,</span><br><span class="line">self.strStrong,self.strStrong,&amp;_strStrong,</span><br><span class="line">self.strCopy,self.strCopy,&amp;_strCopy);</span><br></pre></td></tr></table></figure></p>
+<img src="/2019/01/08/10-3内存管理/strong2.png" title="strong2">
+<p><code>结论：数据源为可变字符串而言，使用copy申明属性，会开辟一块新的内存空间存放值，源数据不论怎么变化，都不会影响copy属性中的值，属于深拷贝；使用strong申明属性，不会开辟新的内存空间，只会引用到源数据内存地址，因此源数据改变，则strong属性也会改变，属于浅拷贝</code></p>
+<p><strong>在实际开发中，我们不希望源数据改变影响到属性中的值，故而使用copy来申明。</strong></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/iOS/" rel="tag"># iOS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/08/10-2内存管理/" rel="next" title="10.2内存管理">
+                <i class="fa fa-chevron-left"></i> 10.2内存管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/08/10-4内存管理/" rel="prev" title="10.4内存管理">
+                10.4内存管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/headIcon.png" alt="NSLegend">
+            
+              <p class="site-author-name" itemprop="name">NSLegend</p>
+              <p class="site-description motion-element" itemprop="description">Stay Hungry,Stay Foolish.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/WSGNSLog" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.jianshu.com/u/ba5f297de9bc" target="_blank" title="简书">
+                      
+                        <i class="fa fa-fw fa-heartbeat"></i>简书</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Copy-amp-Strong原理"><span class="nav-number">1.</span> <span class="nav-text">Copy&amp;Strong原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Copy探究"><span class="nav-number">1.1.</span> <span class="nav-text">Copy探究</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Strong"><span class="nav-number">1.2.</span> <span class="nav-text">Strong</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NSLegend</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
